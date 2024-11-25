@@ -165,14 +165,14 @@ export default function Home() {
           {categorias.map((category) => (
             <div
               key={category.id}
-              className="flex flex-col items-center p-2 gap-4"
+              className="flex flex-col items-center p-2 gap-4 "
             >
               <Image
                 src={category.image}
                 alt={category.category}
-                className="rounded-full h-[12rem] w-[12rem] border-2 border-foreground "
-                width={192}
-                height={192}
+                className="rounded-full h-[12rem] min-w-[12rem] hover:border-2 hover:border-foreground "
+                width={100}
+                height={100}
               />
               <h2>{category.category}</h2>
             </div>
