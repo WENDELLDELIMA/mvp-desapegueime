@@ -1,3 +1,20 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    // Desativa a regra que impede o uso de "any"
+    "@typescript-eslint/no-explicit-any": "off",
+
+    // Permite o uso de "@ts-ignore" ou "@ts-expect-error" sem descrição
+    "@typescript-eslint/ban-ts-comment": [
+      "warn",
+      {
+        "ts-ignore": false, // Permite "@ts-ignore"
+        "ts-expect-error": false // Permite "@ts-expect-error"
+      }
+    ],
+
+    // Outras regras que você pode querer ajustar
+    "react/react-in-jsx-scope": "off", // Next.js já importa React automaticamente
+    "@next/next/no-img-element": "off" // Permite o uso de <img> em vez de <Image>
+  }
 }
