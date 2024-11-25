@@ -22,6 +22,7 @@ export default function Home() {
     { id: 5, name: "Animais de Estimação" },
   ];
   const [categorias, setCategorias] = useState<Category[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -98,25 +99,28 @@ export default function Home() {
   };
   return (
     <div className="w-full">
-      <div className="flex flex-col items-center justify-center bg-foreground h-[106px] min-h[106px]">
-        <div className="container flex items-center justify-between gap-20 p-2">
+      <div className="flex flex-col items-center justify-center bg-foreground h-[106px] min-h-[106px]">
+        <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 hidden sm:flex">
             <Image src={"./logo-full.svg"} width={200} height={10} alt="eu" />
+          </div>
+          <div className="flex-shrink-0 sm:hidden flex">
+            <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
           </div>
 
           {/* Input */}
-          <div className="flex-grow">
+          <div className="w-full sm:w-auto sm:flex-grow">
             <input
               type="text"
               id="basic-input"
-              className="w-full rounded-md h-8 border-gray-300 shadow-sm sm:text-sm px-3"
+              className="w-full rounded-md h-10 sm:h-8 border-gray-300 shadow-sm sm:text-sm px-3"
               placeholder="Pesquisar"
             />
           </div>
 
           {/* Botões */}
-          <div className="flex gap-2 h-8">
+          <div className="sm:flex hidden gap-2 h-8">
             <button className="bg-white rounded-md p-2 w-[150px] shadow-md flex justify-center items-center">
               Entrar
             </button>
@@ -124,11 +128,17 @@ export default function Home() {
               Anunciar
             </button>
           </div>
+          <div>
+            <button className="bg-white sm:hidden rounded-md p-2 shadow-md flex justify-center items-center">
+              <ShoppingBag />
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="border-b-2">
-        <nav className="flex mx-[15%] justify-center">
+        {/* Menu Web */}
+        <nav className=" hidden sm:flex mx-[15%] justify-center">
           <ul className="flex w-full justify-between items-center container h-[53px]">
             {menu.map((menu) => (
               <li
@@ -138,43 +148,84 @@ export default function Home() {
                 {menu.name}
               </li>
             ))}
-            <li className="text-[#606060] cursor-pointer flex items-center justify-center h-full hover:border-b-2 hover:border-violet-600 transition-all">
+          </ul>
+        </nav>
+        {/* Menu Mobile */}
+        <nav className="sm:hidden flex container mx-auto">
+          {/* Menu container */}
+          <ul className="flex flex-col md:flex-row md:justify-between w-full items-center">
+            {/* "Todas as Categorias" always visible */}
+            <li
+              className="text-[#606060] cursor-pointer flex items-center justify-center h-12 md:h-full w-full md:w-auto hover:border-b-2 hover:border-violet-600 transition-all"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
               Todas as Categorias
+              <span className="ml-2">{menuOpen ? "▲" : "▼"}</span>
             </li>
+
+            {/* Other categories */}
+            <div
+              className={`${
+                menuOpen ? "flex" : "hidden"
+              } flex-col md:flex md:flex-row w-full md:w-auto`}
+            >
+              {menu.map((menu) => (
+                <li
+                  key={menu.id}
+                  className="text-[#606060] cursor-pointer flex items-center justify-center h-12 md:h-full w-full md:w-auto hover:border-b-2 hover:border-violet-600 transition-all"
+                >
+                  {menu.name}
+                </li>
+              ))}
+            </div>
           </ul>
         </nav>
       </div>
 
       <div className="w-full flex items-center justify-center">
         <div className="container justify-center flex">
+          {/* Banner Web */}
           <Image
             src={"./banner-home.svg"}
             alt="eu"
             width={1300}
             height={300}
-            className="w-[90%] h-auto"
+            className="w-[90%] h-auto hidden sm:flex"
+          />
+          {/* Banner Mobile */}
+          <Image
+            src={"./bannermobile.svg"}
+            alt="eu"
+            width={1300}
+            height={300}
+            className="w-[90%] h-auto sm:hidden flex mt-5"
           />
         </div>
       </div>
-      <div className="flex flex-col m-auto w-[72%]">
+      <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
         <h1 className="font-semibold pb-8">
           <span className="text-gray-500 text-lg">Compre nas </span>Principais
           Categorias
         </h1>
-        <div className="flex gap-8 justify-center">
-          {categorias.map((category) => (
+        <div className="grid grid-cols-4 gap-10 sm:grid-cols-5 justify-center">
+          {/* Exibe os itens */}
+          {categorias.slice(0, 5).map((category, index) => (
             <div
               key={category.id}
-              className="flex flex-col items-center p-2 gap-4 "
+              className={`flex flex-col items-center    ${
+                index > 3 ? "hidden sm:flex" : ""
+              }`}
             >
               <Image
                 src={category.image}
                 alt={category.category}
-                className="rounded-full h-[12rem] min-w-[12rem] hover:border-2 hover:border-foreground "
+                className="rounded-full h-[5rem] min-w-[5rem] sm:h-[12rem] sm:w-[12rem] hover:border-2 hover:border-foreground"
                 width={100}
                 height={100}
               />
-              <h2>{category.category}</h2>
+              <h2 className="text-[0.8rem] ml-1 sm:text-lg whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                {category.category}
+              </h2>
             </div>
           ))}
         </div>
@@ -182,7 +233,10 @@ export default function Home() {
 
       <div className="flex flex-col gap-8 mt-12">
         {categorias.map((category) => (
-          <div key={category.id} className="flex flex-col m-auto w-[72%]">
+          <div
+            key={category.id}
+            className="flex flex-col m-auto w-[90%] sm:w-[72%]"
+          >
             {/* Nome da Categoria */}
             <div className="flex items-top justify-between">
               <h1 className="font-semibold pb-8 text-lg text-gray-500">
@@ -194,12 +248,12 @@ export default function Home() {
             </div>
 
             {/* Produtos da Categoria */}
-            <div className="flex gap-8 justify-start">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 justify-start">
               {getProdutosPorCategoria(category.category).map(
                 (produto: any) => (
                   <div
                     key={produto.id}
-                    className="flex flex-col items-center  border rounded-lg shadow-md w-[15rem]"
+                    className="flex flex-col items-center border rounded-lg shadow-md w-full"
                   >
                     <div className="relative w-full h-[12rem]">
                       {/* Imagem */}
@@ -272,22 +326,24 @@ export default function Home() {
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-8 mt-12">
-        <div className="flex flex-col m-auto w-[72%]">
+      <div className="flex flex-col gap-4 sm:gap-8 mt-12">
+        <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
           {/* Nome da Categoria */}
           <div className="flex items-top justify-between">
             <h1 className="font-semibold pb-8 text-lg text-gray-500">
-              Pessoas estão querendo comprar
+              Estão querendo comprar
             </h1>
             <span className="items-center flex h-full">
               ver todos <span className="text-xl"> {" >"} </span>
             </span>
           </div>
-          <div className="flex gap-8 justify-start">
+
+          {/* Produtos em Grid Responsivo */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 justify-start">
             {produtosCompras.map((produto) => (
               <div
                 key={produto.id}
-                className="flex flex-col items-center  border rounded-lg shadow-md w-[15rem]"
+                className="flex flex-col items-center border rounded-lg shadow-md w-full"
               >
                 <div className="relative w-full h-[12rem]">
                   {/* Imagem */}
@@ -335,8 +391,9 @@ export default function Home() {
                 </div>
                 <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">
                   {/* Botão Compre Agora */}
-                  <button className="bg-red-500 text-white px-2 py-1 text-[0.7rem] rounded shadow-md hover:bg-violet-700">
-                    Fazer Desapego
+                  <button className="bg-red-500 text-white px-2 py-1 text-[0.7rem] rounded shadow-md hover:bg-violet-700 ">
+                    <span className="hidden sm:block">Fazer Desapego</span>
+                    <span className="sm:hidden block">Desapegar já!</span>
                   </button>
 
                   {/* Ícones */}
@@ -356,8 +413,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-          {/* Produtos da Categoria */}
-          <div className="flex gap-8 justify-start"></div>
         </div>
       </div>
 
@@ -368,7 +423,15 @@ export default function Home() {
             alt="eu"
             width={1300}
             height={300}
-            className="w-[90%] h-auto"
+            className="w-[90%] h-auto hidden sm:block"
+          />
+
+          <Image
+            src={"./procurando.svg"}
+            alt="eu"
+            width={1300}
+            height={300}
+            className="w-[90%] h-auto sm:hidden block"
           />
         </div>
       </div>
