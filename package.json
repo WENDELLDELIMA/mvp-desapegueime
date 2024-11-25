@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "firebase": "^11.0.2",
+    "lottie-react": "^2.4.0",
     "lucide-react": "^0.460.0"
   }
 }

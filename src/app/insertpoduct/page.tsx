@@ -94,6 +94,7 @@ export default function AddProduct() {
 
   return (
     <div className="p-4">
+      <div className="z-50 w-full h-full bg-foreground">ok</div>
       <h1 className="text-2xl font-bold mb-6">Adicionar Produto</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
         {/* Categoria */}
