@@ -93,7 +93,7 @@ export default function Home() {
       }
       setTimeout(() => {
         setLoading(false);
-      }, 2800);
+      }, 2500);
     };
 
     fetchData();
