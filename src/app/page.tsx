@@ -8,7 +8,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { Heart, ShoppingBag } from "lucide-react";
-import Lottie from "lottie-react";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
 import loadingAnimation from "../../public/animations/animation.json";
 
 type Category = {
