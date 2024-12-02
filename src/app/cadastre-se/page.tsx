@@ -14,11 +14,7 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 
-type Category = {
-  id: string;
-  category: string;
-  image: string;
-};
+
 export default function Home() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
@@ -54,8 +50,9 @@ export default function Home() {
     fetchCategories();
   }, []);
 
-  const [produtos, setProdutos] = useState([]);
-  // const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  // const [produtos, setProdutos] = useState([]);
+  const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  console.log("🚀 ~ Home ~ produtosCompras:", produtosCompras)
 
   const handleSubmit = () => {
     alert(10);

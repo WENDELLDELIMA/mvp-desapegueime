@@ -33,15 +33,8 @@ import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
-import FilterSidebar from "../components/FilterSidebar";
-import { useSearchParams } from "next/navigation";
 import { useProduct } from "@/context/productContext";
 
-// type Category = {
-//   id: string;
-//   category: string;
-//   image: string;
-// };
 export default function VisualizarProduto() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
@@ -57,14 +50,11 @@ export default function VisualizarProduto() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
 
   const { product } = useProduct();
 
-  if (!product) {
-    return <p>Produto não encontrado</p>;
-  }
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,6 +93,10 @@ export default function VisualizarProduto() {
 
     fetchData();
   }, []);
+
+  if (!product) {
+    return <p>Produto não encontrado</p>;
+  }
 
   return (
     <>
@@ -279,7 +273,7 @@ export default function VisualizarProduto() {
 
           {/* Caminho de pão - breadcrumb */}
           <div className="hidden px-72 py-2 sm:flex gap-2 h-20 content-center items-center border-b border-violet-500">
-            <a href="/"><HomeIcon className="text-gray-700" /></a>
+            <Link href="/"><HomeIcon className="text-gray-700" /></Link>
             <span className="text-gray-700">Home</span> / <span>{product.description}</span>
           </div>
 

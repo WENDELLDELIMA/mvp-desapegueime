@@ -117,7 +117,8 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const getProdutosPorCategoria = () => {
+  const getProdutosPorCategoria = (p0?: string) => {
+    console.log("🚀 ~ getProdutosPorCategoria ~ p0:", p0);
     return produtos;
   };
   return (

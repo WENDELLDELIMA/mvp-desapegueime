@@ -58,7 +58,9 @@ export default function Home() {
   }, []);
 
   // const [produtos, setProdutos] = useState([]);
-  // const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  console.log("🚀 ~ Home ~ produtosCompras:", produtosCompras);
+  
   const router = useRouter();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
