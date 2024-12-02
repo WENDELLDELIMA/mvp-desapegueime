@@ -6,7 +6,7 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
+import { db } from "../../../firebase";
 import {
   Bell,
   Grid,
@@ -20,10 +20,11 @@ import {
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
-import loadingAnimation from "../../public/animations/animation.json";
+import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
+import FilterSidebar from "../components/FilterSidebar";
 
 type Category = {
   id: string;
@@ -117,9 +118,7 @@ export default function Home() {
   }, []);
   //@ts-expect-error
   const getProdutosPorCategoria = (category) => {
-    console.log(10);
-    //@ts-expect-error
-    return produtos.filter((produto) => produto.category === category);
+    return produtos;
   };
   return (
     <>
@@ -295,149 +294,83 @@ export default function Home() {
             </nav>
           </div>
 
-          <div className="w-full flex items-center justify-center">
-            <div className="container justify-center flex">
-              {/* Banner Web */}
-              <Image
-                src={"./banner-home.svg"}
-                alt="eu"
-                width={1300}
-                height={300}
-                className="w-[90%] h-auto hidden sm:flex"
-              />
-              {/* Banner Mobile */}
-              <Image
-                src={"./bannermobile.svg"}
-                alt="eu"
-                width={1300}
-                height={300}
-                className="w-[90%] h-auto sm:hidden flex mt-5"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
-            <h1 className="font-semibold pb-8">
-              <span className="text-gray-500 text-lg">Compre nas </span>
-              Principais Categorias
-            </h1>
-            <div className="grid grid-cols-4 gap-10 sm:grid-cols-5 justify-center">
-              {/* Exibe os itens */}
-              {categorias.slice(0, 5).map((category, index) => (
-                <div
-                  key={category.id}
-                  className={`flex flex-col items-center    ${
-                    index > 3 ? "hidden sm:flex" : ""
-                  }`}
-                >
-                  <Image
-                    src={category.image}
-                    alt={category.category}
-                    className="rounded-full h-[5rem] min-w-[5rem] sm:h-[12rem] sm:w-[12rem] hover:border-2 hover:border-foreground"
-                    width={100}
-                    height={100}
-                  />
-                  <h2 className="text-[0.8rem] ml-1 sm:text-lg whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                    {category.category}
-                  </h2>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="flex flex-col gap-8 mt-12">
-            {categorias.map((category) => (
-              <div
-                key={category.id}
-                className="flex flex-col m-auto w-[90%] sm:w-[72%]"
-              >
-                {/* Nome da Categoria */}
-                <div className="flex items-top justify-between">
-                  <h1 className="font-semibold pb-8 text-lg text-gray-500">
-                    {category.category}
-                  </h1>
-                  <span className="items-center flex h-full">
-                    ver todos <span className="text-xl"> {" >"} </span>
-                  </span>
+            <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
+              {/* Nome da Categoria */}
+              <div className="flex items-top justify-between">
+                <h1 className="font-semibold pb-8 text-xl text-black">
+                  Anuncios Relacionados
+                </h1>
+                <span className="items-center flex h-full">
+                  ver todos <span className="text-xl"> {" >"} </span>
+                </span>
+              </div>
+
+              {/* Produtos da Categoria */}
+              <div className="grid grid-cols-4 gap-4 space-x-10">
+                <div>
+                  <FilterSidebar />
                 </div>
 
-                {/* Produtos da Categoria */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 justify-start">
-                  {getProdutosPorCategoria(category.category).map(
-                    (produto: any) => (
-                      <div
-                        key={produto.id}
-                        className="flex flex-col items-center border rounded-lg shadow-md w-full"
-                      >
-                        <div className="relative w-full h-[12rem]">
-                          {/* Imagem */}
-                          <Image
-                            src={produto.image}
-                            alt={produto.description}
-                            className="h-full w-full object-cover rounded-md"
-                            width={100}
-                            height={100}
-                          />
-
-                          {/* Span no canto superior direito */}
-                          {produto.oldPrice > produto.currentPrice && (
-                            <span className="absolute top-0 right-0 text-white p-1 text-xs font-bold rounded bg-violet-400">
-                              {`${(
-                                ((produto.currentPrice - produto.oldPrice) /
-                                  produto.currentPrice) *
-                                100
-                              ).toFixed(2)}%`}
-                            </span>
-                          )}
-
-                          {produto.oldPrice < produto.currentPrice && (
-                            <span className="absolute top-0 right-0 text-white p-1 text-xs font-bold rounded bg-red-400">
-                              {`${(
-                                ((produto.currentPrice - produto.oldPrice) /
-                                  produto.currentPrice) *
-                                100
-                              ).toFixed(2)}%`}
-                            </span>
-                          )}
-                        </div>
-
-                        <h2 className="font-semibold text-sm text-black w-full p-2">
+                <div className="grid grid-cols-1 sm:grid-cols-1  justify-start col-span-3">
+                  {getProdutosPorCategoria("").map((produto: any) => (
+                    <div
+                      key={produto.id}
+                      className="flex flex-row items-center  rounded-lg shadow-md w-full gap-8 mt-2"
+                    >
+                      <div className="relative h-[12rem]">
+                        {/* Imagem */}
+                        <Image
+                          src={produto.image}
+                          alt={produto.description}
+                          className="h-full  min-w-72 rounded-md"
+                          width={100}
+                          height={100}
+                        />
+                      </div>
+                      <div className=" flex  flex-col w-full  items-start gap-4 p-4">
+                        <h2 className="font-semibold text-lg text-black   ">
                           {produto.description}
                         </h2>
-                        <div className="flex w-full justify-around items-baseline">
-                          <span className="text-foreground font-bold">
-                            R$ {produto.currentPrice.toFixed(2)}
-                          </span>
+                        <div className="flex w-full items-center gap-4">
+                          <div className="w-full justify-between flex items-center">
+                            <span className="text-foreground font-bold text-lg">
+                              R$ {produto.currentPrice.toFixed(2)}
+                            </span>
 
-                          <span className="text-gray-400 line-through text-sm">
-                            R$ {produto.oldPrice.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">
-                          {/* Botão Compre Agora */}
-                          <button className="bg-violet-500 text-white px-2 py-1 text-[0.7rem] rounded shadow-md hover:bg-violet-700">
-                            Compre agora
-                          </button>
-
-                          {/* Ícones */}
-                          <div className="flex items-center gap-4">
-                            {/* Carrinho */}
-                            <ShoppingBag
-                              size={18}
-                              className="cursor-pointer hover:text-violet-700"
-                            />
-                            {/* Favoritar */}
-                            <Heart
-                              size={18}
-                              className="cursor-pointer hover:text-violet-500"
-                            />
+                            <span className="text-gray-400 line-through text-sm">
+                              R$ {produto.oldPrice.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className=" w-full flex items-center justify-around py-2 px-2 gap-4 flex-grow">
+                            {/* Botão Compre Agora */}
+                            <button className="bg-violet-500 text-white px-2 py-1 text-[1rem] rounded shadow-md hover:bg-violet-700">
+                              Compre agora
+                            </button>
+                            <button className="bg-white-500 text-foreground border border-foreground px-2 py-1 text-[1rem] rounded shadow-md hover:bg-violet-700">
+                              Fazer Oferta
+                            </button>
+                            {/* Ícones */}
+                            <div className="flex items-center gap-4">
+                              {/* Carrinho */}
+                              <ShoppingBag
+                                size={18}
+                                className="cursor-pointer hover:text-violet-700"
+                              />
+                              {/* Favoritar */}
+                              <Heart
+                                size={18}
+                                className="cursor-pointer hover:text-violet-500"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    )
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
           <div className="flex flex-col gap-4 sm:gap-8 mt-12">
             <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
