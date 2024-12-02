@@ -437,10 +437,10 @@ export default function VisualizarProduto() {
                 <input
                   type="text"
                   id="basic-input"
-                  className=" rounded-md ml-14 h-10 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
+                  className=" rounded-md ml-10 h-10 w-4/5 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
                   placeholder="Pergunte ao vendedor"
                 />
-                <button className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 w-44">
+                <button className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 ">
                   Perguntar
                 </button>
               </div>
