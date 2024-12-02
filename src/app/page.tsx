@@ -83,7 +83,7 @@ export default function Home() {
         setCategorias(categoriasData);
 
         // Buscar produtos
-        const q = query(collection(db, "produtos"), where("type", "==", ""));
+        const q = query(collection(db, "products"), where("type", "==", null));
 
         const produtosSnapshot = await getDocs(q);
         const produtosData = produtosSnapshot.docs.map((doc) => ({
@@ -371,8 +371,8 @@ export default function Home() {
                         <div className="relative w-full h-[12rem]">
                           {/* Imagem */}
                           <Image
-                            src={produto.image}
-                            alt={produto.description}
+                            src={produto.images[0]}
+                            alt={produto.subcategory}
                             className="h-full w-full object-cover rounded-md"
                             width={100}
                             height={100}
@@ -401,15 +401,15 @@ export default function Home() {
                         </div>
 
                         <h2 className="font-semibold text-sm text-black w-full p-2">
-                          {produto.description}
+                          {produto.name}
                         </h2>
                         <div className="flex w-full justify-around items-baseline">
                           <span className="text-foreground font-bold">
-                            R$ {produto.currentPrice.toFixed(2)}
+                            R$ {produto.price}
                           </span>
 
-                          <span className="text-gray-400 line-through text-sm">
-                            R$ {produto.oldPrice.toFixed(2)}
+                          <span className="text-gray-400 font-semibold">
+                            {produto.condition}
                           </span>
                         </div>
                         <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">
@@ -459,7 +459,6 @@ export default function Home() {
                     className="flex flex-col items-center border rounded-lg shadow-md w-full"
                   >
                     <div className="relative w-full h-[12rem]">
-                      {/* Imagem */}
                       <Image
                         src={produto.image}
                         alt={produto.description}
