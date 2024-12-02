@@ -25,9 +25,11 @@ import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import { useProduct } from "@/context/productContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../../firebase";
 
-export default function MeusAnuncios() {
+export default function meusAnuncios() {
     const [loading, setLoading] = useState(false);
     console.log("🚀 ~ meusAnuncios ~ setLoading:", setLoading);
     const menu = [
@@ -50,6 +52,39 @@ export default function MeusAnuncios() {
 
     const { product } = useProduct();
     console.log("🚀 ~ meusAnuncios ~ product:", product)
+    const [produtos, setProdutos] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchProdutos = async () => {
+            if (!user?.username) {
+                console.warn("Usuário não definido. Não será feita a consulta.");
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                // Query para buscar produtos do usuário pelo email
+                const produtosRef = collection(db, "products");
+                const produtosQuery = query(produtosRef, where("user", "==", user.username.toUpperCase()));
+                const querySnapshot = await getDocs(produtosQuery);
+
+                // Transforme os documentos em um array
+                const produtosData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+
+                setProdutos(produtosData);
+            } catch (error) {
+                console.error("Erro ao buscar produtos:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProdutos();
+    }, [user]); // Adicione `user` às dependências para refazer a consulta quando o user mudar
 
 
 
@@ -229,95 +264,76 @@ export default function MeusAnuncios() {
                     </div>
 
                     {/* Corpo da página */}
-                    <div className="h-screen w-full px-60 pt-10 ">
+                    < div className="h-screen w-full px-60 pt-10 ">
 
                         <h3 className="text-5xl text-gray-800 px-4">Meus anúncios</h3>
 
                         {/* Tabs */}
                         <div className="flex w-fit px-2 py-1 text-gray-600 mt-4">
-                            <Link href="#" className="border-b-2 border-violet-500 px-2"> Publicados (2) </Link>
+                            <Link href="#" className="border-b-2 border-violet-500 px-2"> Publicados ({produtos.length}) </Link>
                             <Link href="#" className="border-b-2 hover:border-violet-500 px-2"> Aguardando publicação </Link>
                             <Link href="#" className="border-b-2 hover:border-violet-500 px-2"> Inativos </Link>
                             <Link href="#" className="border-b-2 hover:border-violet-500 px-2"> Expirados </Link>
                         </div>
 
-                        <div className="flex flex-col gap-4 w-full h-full mt-10">
-                            {/* Card de anúncio */}
-                            <div className=" w-full h-52 rounded-lg border border-neutral-300 gap-2 items">
-                                <div className="content-center items-center w-full  py-2 border-b border-neutral-300">
-                                    <span className="text-md text-gray-800 p-4 my-10">Expira em 25 de janeiro de 2024</span>
-                                </div>
+
+                        {loading ? (
+                            <div>Carregando...</div>
+                        ) : produtos.length === 0 ? (
+                            <div className="px-2 py-4 flex flex-row content-center items-center gap-2 ">
+                                <p>Nenhum anúncio encontrado :(</p>
+                                <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 text-nowrap">
+                                    Anuncie um produto
+                                </button>
+                            </div>
+                        ) : (<>
+
+                            <div className="flex flex-col gap-4 w-full max-h-screen mt-6 overflow-auto">
+                                {produtos.map((produto) => (
+                                    <div className=" w-full h-52 rounded-lg border border-neutral-300 gap-2 items" key={produto}>
+                                        <div className="content-center items-center w-full  py-2 border-b border-neutral-300">
+                                            <span className="text-md text-gray-800 p-4 my-10">Expira em 25 de janeiro de 2024</span>
+                                        </div>
 
 
-                                <div className="flex">
-                                    <div className="content-center items-center w-full py-2 h-fit px-4 flex gap-6">
-                                        <Image
-                                            src={'https://a-static.mlcdn.com.br/1500x1500/oculos-de-realidade-virtual-para-galaxy-samsung-gear-vr/magazineluiza/040412200/0187af67ed3cdb557f6cd8eef63a855f.jpg'}
-                                            alt={'Descrição do produto'}
-                                            className="h-36 w-36 object-cover rounded-lg cursor-pointer shadow-md"
-                                            width={1000}
-                                            height={1000}
-                                        />
-                                        <div className="flex flex-col w-2/4">
-                                            <span className="text-gray-600">Óculos VR Sansung - óculos virtual gear vr, compatível com smartphone samsung, com tiras ajustáveis.  </span>
-                                            <span className="font-bold">R$2986,40</span>
+                                        <div className="flex">
+                                            <div className="content-center items-center w-full py-2 h-fit px-4 flex gap-6">
+                                                <Image
+                                                    src={produto.images[0]}
+                                                    alt={'Descrição do produto'}
+                                                    className="h-36 w-36 object-cover rounded-lg cursor-pointer shadow-md"
+                                                    width={1000}
+                                                    height={1000}
+                                                />
+                                                <div className="flex flex-col w-2/4">
+                                                    <span className="text-gray-600">{produto.name }</span>
+                                                    <span className="font-bold">R${produto.price},00</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-col w-1/5 mx-12 py-2 h-full items-center flex gap-2 mt-6">
+                                                <button className="flex text-nowrap bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-48">
+                                                    <Pause /> Pausar anúncio
+                                                </button>
+                                                <div className="flex items gap-2">
+                                                    <button className="flex gap-2 border border-violet-500 text-violet-500 px-6 py-2 rounded-md hover:bg-violet-500 hover:text-white w-36">
+                                                        <Pencil />  Editar
+                                                    </button>
+                                                    <Trash className="text-white bg-red-500 rounded-md w-10 h-10 p-1" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div className="flex-col w-1/5 mx-12 py-2 h-full items-center flex gap-2 mt-6">
-                                        <button className="flex text-nowrap bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-48">
-                                            <Pause /> Pausar anúncio
-                                        </button>
-                                        <div className="flex items gap-2">
-                                            <button className="flex gap-2 border border-violet-500 text-violet-500 px-6 py-2 rounded-md hover:bg-violet-500 hover:text-white w-36">
-                                                <Pencil />  Editar
-                                            </button>
-                                            <Trash className="text-white bg-red-500 rounded-md w-10 h-10 p-1" />
-                                        </div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
 
 
-                            <div className=" w-full h-52 rounded-lg border border-neutral-300 gap-2 items">
-                                <div className="content-center items-center w-full  py-2 border-b border-neutral-300">
-                                    <span className="text-md text-gray-800 p-4 my-10">Expira em 25 de janeiro de 2024</span>
-                                </div>
+                        </>)}
 
 
-                                <div className="flex">
-                                    <div className="content-center items-center w-full py-2 h-fit px-4 flex gap-6">
-                                        <Image
-                                            src={'https://images-americanas.b2w.io/produtos/212094125/imagens/usado-jogo-guitar-hero-iii-legends-of-rock-guitarra-ps3/212094125_1_large.jpg'}
-                                            alt={'Descrição do produto'}
-                                            className="h-36 w-36 object-cover rounded-lg cursor-pointer shadow-md"
-                                            width={1000}
-                                            height={1000}
-                                        />
-                                        <div className="flex flex-col w-2/4">
-                                            <span className="text-gray-600">Guitar Hero World Tour Original - jogo videogame nintendo wii guitar hero world tour original. </span>
-                                            <span className="font-bold">R$189,40,40</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-col w-1/5 mx-12 py-2 h-full items-center flex gap-2 mt-6">
-                                        <button className="flex text-nowrap bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-48">
-                                            <Pause /> Pausar anúncio
-                                        </button>
-                                        <div className="flex items gap-2">
-                                            <button className="flex gap-2 border border-violet-500 text-violet-500 px-6 py-2 rounded-md hover:bg-violet-500 hover:text-white w-36">
-                                                <Pencil />  Editar
-                                            </button>
-                                            <Trash className="text-white bg-red-500 rounded-md w-10 h-10 p-1" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+                    </div >
                     {/* Rodapé */}
-                    <footer className="bg-violet-500 text-white py-6 mt-10">
+                    < footer className="bg-violet-500 text-white py-6 mt-10 z-50" >
                         <div className="container mx-auto px-4">
                             {/* Links principais */}
                             <div className="flex justify-between border-b border-white/20 pb-6 mb-6">
@@ -374,9 +390,10 @@ export default function MeusAnuncios() {
                                 </div>
                             </div>
                         </div>
-                    </footer>
-                </div>
-            )}
+                    </footer >
+                </div >
+            )
+            }
         </>
     );
 }
