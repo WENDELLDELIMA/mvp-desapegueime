@@ -47,34 +47,29 @@ export default function VisualizarProduto() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [categorias, setCategorias] = useState<Category[]>([]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
 
-  const { product } = useProduct();
-
-  
+  const { product, setProduct } = useProduct();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         // Buscar produtos
-        const q = query(collection(db, "produtos"), where("type", "==", ""));
+        const q = query(collection(db, "products"));
 
         const produtosSnapshot = await getDocs(q);
         const produtosData = produtosSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        // @ts-expect-error
-        setProdutos(produtosData);
 
-        const qc = query(
-          collection(db, "produtos"),
-          where("type", "==", "Compra")
-        );
+        console.log(produtosData);
+
+        const qc = query(collection(db, "product"));
 
         const produtosSnapshotc = await getDocs(qc);
         const produtosDatac = produtosSnapshotc.docs.map((doc) => ({
@@ -113,12 +108,14 @@ export default function VisualizarProduto() {
             <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
               {/* Logo */}
               <div className="flex-shrink-0 hidden sm:flex">
-                <Image
-                  src={"./logo-full.svg"}
-                  width={200}
-                  height={10}
-                  alt="eu"
-                />
+                <Link href="/">
+                  <Image
+                    src={"./logo-full.svg"}
+                    width={200}
+                    height={10}
+                    alt="eu"
+                  />
+                </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
                 <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
@@ -255,8 +252,9 @@ export default function VisualizarProduto() {
 
                 {/* Other categories */}
                 <div
-                  className={`${menuOpen ? "flex" : "hidden"
-                    } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${
+                    menuOpen ? "flex" : "hidden"
+                  } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
@@ -273,18 +271,28 @@ export default function VisualizarProduto() {
 
           {/* Caminho de pão - breadcrumb */}
           <div className="hidden px-72 py-2 sm:flex gap-2 h-20 content-center items-center border-b border-violet-500">
-            <Link href="/"><HomeIcon className="text-gray-700" /></Link>
-            <span className="text-gray-700">Home</span> / <span>{product.description}</span>
+            <Link href="/">
+              <HomeIcon className="text-gray-700" />
+            </Link>
+            <span className="text-gray-700">Home</span> /{" "}
+            <span>{product.name}</span>
           </div>
 
           <div className="flex sm:hidden">
             <div className="px-4 flex flex-row gap-2 py-2 content-center items-center text-xs justify-between">
-              <span className="text-gray-500">Vendido por <span className="text-violet-500">Luis Alves</span></span>
+              <span className="text-gray-500">
+                Vendido por <span className="text-violet-500">Luis Alves</span>
+              </span>
               <div className="flex content-center items-center gap-1">
-                <span className="text-gray-600">4,5</span> <StarIcon className="w-4" /><StarIcon className="w-4" /><StarIcon className="w-4" /><StarIcon className="w-4" /> <span className="text-gray-600">(68)</span>
+                <span className="text-gray-600">4,5</span>{" "}
+                <StarIcon className="w-4" />
+                <StarIcon className="w-4" />
+                <StarIcon className="w-4" />
+                <StarIcon className="w-4" />{" "}
+                <span className="text-gray-600">(68)</span>
               </div>
             </div>
-            <span className="px-4 text-gray-600">{product.description} - Usado</span>
+            <span className="px-4 text-gray-600">{product.name} - Usado</span>
           </div>
 
           <div className="flex flex-row mt-12 sm:px-44 sm:h-[40vh]">
@@ -292,29 +300,29 @@ export default function VisualizarProduto() {
               {/* Seção de imagens */}
               <div className="flex sm:flex-col flex-row gap-3 mt-1">
                 <Image
-                  src={product.image}
-                  alt={product.description}
+                  src={product.images?.[0]}
+                  alt={product.name}
                   className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
                   width={90}
                   height={80}
                 />
                 <Image
-                  src={product.image}
-                  alt={product.description}
+                  src={product.images?.[0]}
+                  alt={product.name}
                   className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
                   width={90}
                   height={80}
                 />
                 <Image
-                  src={product.image}
-                  alt={product.description}
+                  src={product.images?.[0]}
+                  alt={product.name}
                   className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
                   width={90}
                   height={80}
                 />
                 <Image
-                  src={product.image}
-                  alt={product.description}
+                  src={product.images?.[0]}
+                  alt={product.name}
                   className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
                   width={90}
                   height={80}
@@ -324,8 +332,8 @@ export default function VisualizarProduto() {
               {/* Imagem principal */}
               <div className="w-3/4">
                 <Image
-                  src={product.image}
-                  alt={product.description}
+                  src={product.images?.[0]}
+                  alt={product.name}
                   className="h-full w-full object-cover rounded-sm shadow-md"
                   width={90}
                   height={80}
@@ -335,15 +343,18 @@ export default function VisualizarProduto() {
               {/* Informações do produto */}
               <div className="flex flex-col justify-between content-center  w-2/4 mb-2">
                 <div>
-                  <h3 className="text-3xl font-bold">{product.description}</h3>
+                  <h3 className="text-3xl font-bold">{product.name}</h3>
                   <p className="text-gray-600">
-                    Descrição de venda do produto {product.description}
+                    Descrição de venda do produto {product.name}
                   </p>
                 </div>
                 <div className="my-4">
-                  <span className="text-3xl font-bold">R${product.oldPrice},00</span>
+                  <span className="text-3xl font-bold">
+                    R${product.price},00
+                  </span>
                   <p className="text-sm text-gray-500">
-                    Última Oferta: R$390,00 <span className="text-gray-400">25min</span>
+                    Última Oferta: R$390,00{" "}
+                    <span className="text-gray-400">25min</span>
                   </p>
                 </div>
                 <div className="flex gap-4 mt-16 content-center items-center w-full">
@@ -359,7 +370,6 @@ export default function VisualizarProduto() {
                   />
                 </div>
 
-
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <Heart
@@ -370,8 +380,12 @@ export default function VisualizarProduto() {
                   </div>
                   <div className="text-gray-700 flex gap-2 content-center">
                     <p>Compartilhar Produto</p>
-                    <p className="text-sm"><Copy size={12}
-                      className="cursor-pointer text-gray-700 hover:text-violet-500" /></p>
+                    <p className="text-sm">
+                      <Copy
+                        size={12}
+                        className="cursor-pointer text-gray-700 hover:text-violet-500"
+                      />
+                    </p>
                   </div>
                 </div>
               </div>
@@ -383,8 +397,10 @@ export default function VisualizarProduto() {
               <div className="flex items-center mt-4">
                 <div className="w-12 h-12 bg-gray-200 rounded-full">
                   <Image
-                    src={'https://maikon.biz/wp-content/uploads/2020/06/gerador-de-persona-maikonbiz.png'}
-                    alt={product.description}
+                    src={
+                      "https://maikon.biz/wp-content/uploads/2020/06/gerador-de-persona-maikonbiz.png"
+                    }
+                    alt={product.name}
                     className=" object-cover rounded-sm cursor-pointer"
                     width={100}
                     height={100}
@@ -393,7 +409,9 @@ export default function VisualizarProduto() {
                 <div className="ml-4 flex gap-1">
                   <div>
                     <p className="text-sm font-medium">Marcos Silva</p>
-                    <p className="text-sm text-gray-500">Cidade Quadrinhos - CI</p>
+                    <p className="text-sm text-gray-500">
+                      Cidade Quadrinhos - CI
+                    </p>
                     <div className="text-sm flex flex-row content-center">
                       <span>5,0 </span>
                       <Star className="w-4 text-yellow-500" />
@@ -411,13 +429,18 @@ export default function VisualizarProduto() {
               </div>
               <div className="mt-4 text-sm">
                 <p>
-                  <span className="font-bold text-gray-600">Vendas Realizadas:</span> 55
+                  <span className="font-bold text-gray-600">
+                    Vendas Realizadas:
+                  </span>{" "}
+                  55
                 </p>
                 <p>
-                  <span className="font-bold text-gray-600">Tempo Médio de Envio:</span> 7 Dias
+                  <span className="font-bold text-gray-600">
+                    Tempo Médio de Envio:
+                  </span>{" "}
+                  7 Dias
                 </p>
               </div>
-
             </div>
           </div>
 
@@ -441,12 +464,13 @@ export default function VisualizarProduto() {
 
               {/* Sessão de comentários */}
               <div className="grid gap-6 content-center items-center mt-12">
-
                 <div>
                   <div className="flex gap-2">
                     <Image
-                      src={'https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg'}
-                      alt={product.description}
+                      src={
+                        "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
+                      }
+                      alt={product.name}
                       className=" object-cover rounded-full w-20 h-20"
                       width={150}
                       height={80}
@@ -454,7 +478,10 @@ export default function VisualizarProduto() {
 
                     <div className="border border-violet-500 rounded-md p-4 text-gray-600 w-full">
                       <b className="text-gray-700">André P.</b>
-                      <p>Essa edição dos X-Men está em boas condições? Há algum dano visível nas páginas, capa ou lombada?</p>
+                      <p>
+                        Essa edição dos X-Men está em boas condições? Há algum
+                        dano visível nas páginas, capa ou lombada?
+                      </p>
                     </div>
                   </div>
                   <div className="flex flex-row gap-2 justify-end mr-5 mt-2 text-gray-600">
@@ -463,13 +490,14 @@ export default function VisualizarProduto() {
                   </div>
                 </div>
 
-
                 {/* Resposta do vendedor */}
                 <div>
                   <div className="flex ml-20 gap-2">
                     <Image
-                      src={'https://static.vecteezy.com/ti/fotos-gratis/t2/47462753-positivo-homem-em-limpar-limpo-fundo-foto.jpg'}
-                      alt={product.description}
+                      src={
+                        "https://static.vecteezy.com/ti/fotos-gratis/t2/47462753-positivo-homem-em-limpar-limpo-fundo-foto.jpg"
+                      }
+                      alt={product.name}
                       className=" object-cover rounded-full w-20 h-20"
                       width={150}
                       height={80}
@@ -477,7 +505,10 @@ export default function VisualizarProduto() {
 
                     <div className="border border-l-8 border-violet-500 rounded-md p-4 text-gray-600">
                       <b className="text-gray-700">Marcos Silva</b>
-                      <p>Sim, esta edição dos X-Men está em excelentes condições. Não há danos visíveis na capa, lombada ou páginas.</p>
+                      <p>
+                        Sim, esta edição dos X-Men está em excelentes condições.
+                        Não há danos visíveis na capa, lombada ou páginas.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -485,8 +516,10 @@ export default function VisualizarProduto() {
                 <div className="flex flex-col">
                   <div className="flex gap-2">
                     <Image
-                      src={'https://media.istockphoto.com/id/512819336/pt/foto/vista-lateral-do-jovem-sobre-fundo-colorido.jpg?s=612x612&w=0&k=20&c=_xfhf_kbPAzrqY9TsfMj29XnBL9fYK7Q7anvb4ENnnM='}
-                      alt={product.description}
+                      src={
+                        "https://media.istockphoto.com/id/512819336/pt/foto/vista-lateral-do-jovem-sobre-fundo-colorido.jpg?s=612x612&w=0&k=20&c=_xfhf_kbPAzrqY9TsfMj29XnBL9fYK7Q7anvb4ENnnM="
+                      }
+                      alt={product.name}
                       className=" object-cover rounded-full w-20 h-20"
                       width={150}
                       height={80}
@@ -494,13 +527,24 @@ export default function VisualizarProduto() {
 
                     <div className="border border-violet-500 rounded-md p-2 text-gray-600 w-full">
                       <b className="text-gray-700">Lucas S.</b>
-                      <p>Oi, tudo bem? Para facilitar, podemos finalizar a negociação por outro site, como o WhatsApp. Fica mais rápido! Vou te passar o link por aqui.</p>
+                      <p>
+                        Oi, tudo bem? Para facilitar, podemos finalizar a
+                        negociação por outro site, como o WhatsApp. Fica mais
+                        rápido! Vou te passar o link por aqui.
+                      </p>
                     </div>
                   </div>
                   <div className="border border-l-8 border-red-500 rounded-md p-4 text-gray-600 mt-2 end-0 text-sm ml-44">
-                    <b className="text-gray-700">Aviso: Conteúdo fora das diretrizes</b>
-                    <p>Detectamos que a conversa inclui menção a sites externos para negociação ou finalização da transação.
-                      Lembramos que, para sua segurança e para garantir o cumprimento de nossas políticas, negociações devem ser realizadas exclusivamente através da plataforma <br /> Desapeguei.me.</p>
+                    <b className="text-gray-700">
+                      Aviso: Conteúdo fora das diretrizes
+                    </b>
+                    <p>
+                      Detectamos que a conversa inclui menção a sites externos
+                      para negociação ou finalização da transação. Lembramos
+                      que, para sua segurança e para garantir o cumprimento de
+                      nossas políticas, negociações devem ser realizadas
+                      exclusivamente através da plataforma <br /> Desapeguei.me.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -511,8 +555,10 @@ export default function VisualizarProduto() {
               <div>
                 <div className="flex gap-2 items-center">
                   <Image
-                    src={'https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg'}
-                    alt={product.description}
+                    src={
+                      "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
+                    }
+                    alt={product.name}
                     className=" object-cover rounded-full w-20 h-20"
                     width={150}
                     height={80}
@@ -524,19 +570,22 @@ export default function VisualizarProduto() {
                       <p className="text-lg px-6">Ofertou R$ 390,00</p>
                       <div className="gap-3 flex flex-col">
                         <Check className="text-green-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">25 min</span>
+                        <span className="text-xs justify-end float-end sticky bottom-0">
+                          25 min
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <div>
                 <div className="flex gap-2 items-center mt-6">
                   <Image
-                    src={'https://www.psicologo.com.br/wp-content/uploads/sou-uma-pessoa-boa-ou-nao.jpg'}
-                    alt={product.description}
+                    src={
+                      "https://www.psicologo.com.br/wp-content/uploads/sou-uma-pessoa-boa-ou-nao.jpg"
+                    }
+                    alt={product.name}
                     className=" object-cover rounded-full w-20 h-20"
                     width={150}
                     height={80}
@@ -548,19 +597,22 @@ export default function VisualizarProduto() {
                       <p className="text-lg px-6">Ofertou R$ 350,00</p>
                       <div className="gap-3 flex flex-col">
                         <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">2h</span>
+                        <span className="text-xs justify-end float-end sticky bottom-0">
+                          2h
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <div>
                 <div className="flex gap-2 items-center mt-6">
                   <Image
-                    src={'https://blog.unyleya.edu.br/wp-content/uploads/2017/12/saiba-como-a-educacao-ajuda-voce-a-ser-uma-pessoa-melhor.jpeg'}
-                    alt={product.description}
+                    src={
+                      "https://blog.unyleya.edu.br/wp-content/uploads/2017/12/saiba-como-a-educacao-ajuda-voce-a-ser-uma-pessoa-melhor.jpeg"
+                    }
+                    alt={product.name}
                     className=" object-cover rounded-full w-20 h-20"
                     width={150}
                     height={80}
@@ -572,19 +624,22 @@ export default function VisualizarProduto() {
                       <p className="text-lg px-6">Ofertou R$ 350,00</p>
                       <div className="gap-3 flex flex-col">
                         <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">1d</span>
+                        <span className="text-xs justify-end float-end sticky bottom-0">
+                          1d
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <div>
                 <div className="flex gap-2 items-center mt-6">
                   <Image
-                    src={'https://mundoemrevista.com.br/wp-content/uploads/2024/05/pessoa-de-classe-elegante.webp'}
-                    alt={product.description}
+                    src={
+                      "https://mundoemrevista.com.br/wp-content/uploads/2024/05/pessoa-de-classe-elegante.webp"
+                    }
+                    alt={product.name}
                     className=" object-cover rounded-full w-20 h-20"
                     width={150}
                     height={80}
@@ -596,21 +651,19 @@ export default function VisualizarProduto() {
                       <p className="text-lg px-6">Ofertou R$ 360,00</p>
                       <div className="gap-3 flex flex-col">
                         <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">3d</span>
+                        <span className="text-xs justify-end float-end sticky bottom-0">
+                          3d
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
-
 
           {/* quem comprou também viu */}
           <div className="flex flex-col gap-4 sm:gap-8 mt-12">
-
             <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
               {/* Nome da Categoria */}
               <div className="flex items-top justify-between">
@@ -699,7 +752,6 @@ export default function VisualizarProduto() {
               </div>
             </div>
           </div>
-
 
           {/* Rodapé */}
           <footer className="bg-violet-500 text-white py-6 mt-10">
