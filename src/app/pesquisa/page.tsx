@@ -26,11 +26,11 @@ import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import FilterSidebar from "../components/FilterSidebar";
 
-type Category = {
-  id: string;
-  category: string;
-  image: string;
-};
+// type Category = {
+//   id: string;
+//   category: string;
+//   image: string;
+// };
 export default function Home() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
