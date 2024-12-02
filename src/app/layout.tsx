@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google"; // Importa a fonte do Google
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
+import { ProductProvider } from "@/context/productContext";
 
 // Configura a fonte Poppins
 const poppins = Poppins({
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} antialiased`}>
         {" "}
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ProductProvider>{children}</ProductProvider>
+        </AuthProvider>
       </body>
     </html>
   );
