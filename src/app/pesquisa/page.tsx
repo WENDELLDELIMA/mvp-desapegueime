@@ -42,7 +42,7 @@ export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  // const [categorias, setCategorias] = useState<Category[]>([]);
+  const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Home() {
         // Obter dados da coleção "categorias" no Firestore
 
         const querySnapshot = await getDocs(collection(db, "categorias"));
-
+        console.log(querySnapshot);
         // Transformar os documentos em um array de objetos
         const categoriesWithImages = querySnapshot.docs.map((doc) => ({
           id: doc.id, // Adicionar ID do documento
@@ -84,7 +84,7 @@ export default function Home() {
         setCategorias(categoriasData);
 
         // Buscar produtos
-        const q = query(collection(db, "produtos"), where("type", "==", ""));
+        const q = query(collection(db, "products"));
 
         const produtosSnapshot = await getDocs(q);
         const produtosData = produtosSnapshot.docs.map((doc) => ({
@@ -94,10 +94,7 @@ export default function Home() {
         // @ts-expect-error
         setProdutos(produtosData);
 
-        const qc = query(
-          collection(db, "produtos"),
-          where("type", "==", "Compra")
-        );
+        const qc = query(collection(db, "products"));
 
         const produtosSnapshotc = await getDocs(qc);
         const produtosDatac = produtosSnapshotc.docs.map((doc) => ({
@@ -136,12 +133,14 @@ export default function Home() {
             <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
               {/* Logo */}
               <div className="flex-shrink-0 hidden sm:flex">
-                <Image
-                  src={"./logo-full.svg"}
-                  width={200}
-                  height={10}
-                  alt="eu"
-                />
+                <Link href={"/"}>
+                  <Image
+                    src={"./logo-full.svg"}
+                    width={200}
+                    height={10}
+                    alt="eu"
+                  />
+                </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
                 <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
@@ -319,28 +318,27 @@ export default function Home() {
                       key={produto.id}
                       className="flex flex-row items-center  rounded-lg shadow-md w-full gap-8 mt-2"
                     >
-                      <div className="relative h-[12rem]">
+                      <div className="relative  size-[14rem]">
                         {/* Imagem */}
                         <Image
-                          src={produto.image}
-                          alt={produto.description}
-                          className="h-full  min-w-72 rounded-md"
-                          width={100}
-                          height={100}
+                          src={produto.images?.[0]}
+                          alt={produto.name}
+                          className=" object-cover rounded-md border "
+                          fill
                         />
                       </div>
-                      <div className=" flex  flex-col w-full  items-start gap-4 p-4">
+                      <div className=" flex flex-grow  flex-col items-start gap-4 p-4">
                         <h2 className="font-semibold text-lg text-black   ">
-                          {produto.description}
+                          {produto.name}
                         </h2>
                         <div className="flex w-full items-center gap-4">
                           <div className="w-full justify-between flex items-center">
                             <span className="text-foreground font-bold text-lg">
-                              R$ {produto.currentPrice.toFixed(2)}
+                              R$ {produto.price}
                             </span>
 
                             <span className="text-gray-400 line-through text-sm">
-                              R$ {produto.oldPrice.toFixed(2)}
+                              R$ {produto.price}
                             </span>
                           </div>
                           <div className=" w-full flex items-center justify-around py-2 px-2 gap-4 flex-grow">
@@ -395,33 +393,12 @@ export default function Home() {
                     <div className="relative w-full h-[12rem]">
                       {/* Imagem */}
                       <Image
-                        src={produto.image}
-                        alt={produto.description}
+                        src={produto.images?.[0]}
+                        alt={produto.name}
                         className="h-full w-full object-cover rounded-md"
                         width={100}
                         height={100}
                       />
-
-                      {/* Span no canto superior direito */}
-                      {produto.oldPrice > produto.currentPrice && (
-                        <span className="absolute top-0 right-0 text-white p-1 text-xs font-bold rounded bg-violet-400">
-                          {`${(
-                            ((produto.currentPrice - produto.oldPrice) /
-                              produto.currentPrice) *
-                            100
-                          ).toFixed(2)}%`}
-                        </span>
-                      )}
-
-                      {produto.oldPrice < produto.currentPrice && (
-                        <span className="absolute top-0 right-0 text-white p-1 text-xs font-bold rounded bg-red-400">
-                          {`${(
-                            ((produto.currentPrice - produto.oldPrice) /
-                              produto.currentPrice) *
-                            100
-                          ).toFixed(2)}%`}
-                        </span>
-                      )}
                     </div>
 
                     <h2 className="font-semibold text-sm text-black w-full p-2">
@@ -429,11 +406,11 @@ export default function Home() {
                     </h2>
                     <div className="flex w-full justify-around items-baseline">
                       <span className="text-black font-regular">
-                        R$ {produto.currentPrice.toFixed(2)}
+                        R$ {produto.price}
                       </span>
 
                       <span className="text-gray-400 line-through text-sm">
-                        R$ {produto.oldPrice.toFixed(2)}
+                        R$ {produto.price}
                       </span>
                     </div>
                     <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">

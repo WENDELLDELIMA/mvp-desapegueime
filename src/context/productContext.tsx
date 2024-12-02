@@ -1,15 +1,21 @@
-'use client'
+"use client";
 
 import { createContext, useContext, useState } from "react";
 
 type ProductType = {
   id: string;
-  image: string;
-  price: number;
-  oldPrice?: number;
-  description: string;
-  category: string;
-  type: string;
+  category: string; // Categoria do produto
+  code: string; // Código do produto (usando o ID como referência)
+  condition: string; // Condição do produto, por exemplo, "Novo", "Usado"
+  createdAt: string; // Data de criação no formato timestamp
+  images: string[]; // Array de URLs ou base64 das imagens
+  name: string; // Nome do produto
+  price: string; // Preço do produto em formato string
+  sku: string; // SKU do produto
+  stock: string; // Quantidade em estoque
+  subcategory: string; // Subcategoria do produto
+  type: string | null; // Tipo adicional do produto ou null
+  user: string; // Usuário associado ao produto
 };
 
 type ProductContextType = {
@@ -19,7 +25,9 @@ type ProductContextType = {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [product, setProduct] = useState<ProductType | null>(null);
 
   return (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { db } from "../../../../firebase"; // Configuração do Firestore
 import { doc, getDoc, setDoc } from "firebase/firestore";
-
+import { useRouter } from "next/navigation";
 const CategorySelector = ({ userEmail }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
@@ -10,6 +10,7 @@ const CategorySelector = ({ userEmail }) => {
   const [confirmedCondition, setConfirmedCondition] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [userName, setUserName] = useState("");
+  const route = useRouter();
   const [productDetails, setProductDetails] = useState({
     name: "",
     price: "",
@@ -173,6 +174,8 @@ const CategorySelector = ({ userEmail }) => {
       await setDoc(productRef, productData);
 
       alert("Produto adicionado com sucesso!");
+
+      route.push("meus-anuncios");
 
       // Reset do fluxo
       setSelectedCategory(null);
