@@ -47,6 +47,7 @@ export default function VisualizarProduto() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [categorias, setCategorias] = useState<Category[]>([]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +55,7 @@ export default function VisualizarProduto() {
 
   const { product } = useProduct();
 
-  
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,12 +114,14 @@ export default function VisualizarProduto() {
             <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
               {/* Logo */}
               <div className="flex-shrink-0 hidden sm:flex">
-                <Image
-                  src={"./logo-full.svg"}
-                  width={200}
-                  height={10}
-                  alt="eu"
-                />
+                <Link href="/">
+                  <Image
+                    src={"./logo-full.svg"}
+                    width={200}
+                    height={10}
+                    alt="eu"
+                  />
+                </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
                 <Image src={"./logo.svg"} width={45} height={45} alt="eu" />

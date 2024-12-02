@@ -56,7 +56,7 @@ export default function Home() {
 
   // const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
-  console.log("🚀 ~ Home ~ produtosCompras:", produtosCompras)
+  console.log("🚀 ~ Recuperar senha ~ produtosCompras:", produtosCompras)
 
   const handleSubmit = () => {
     alert(10);
