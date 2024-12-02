@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -14,13 +14,8 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
-// type Category = {
-//   id: string;
-//   category: string;
-//   image: string;
-// };
 export default function Home() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
@@ -60,7 +55,7 @@ export default function Home() {
   // const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
   console.log("🚀 ~ Home ~ produtosCompras:", produtosCompras);
-  
+
   const router = useRouter();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -204,9 +199,8 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
