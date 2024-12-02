@@ -24,6 +24,7 @@ import loadingAnimation from "../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
+import { useProduct } from "@/context/productContext";
 
 type Category = {
   id: string;
@@ -44,6 +45,7 @@ export default function Home() {
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -68,6 +70,22 @@ export default function Home() {
 
   const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+
+  const { setProduct } = useProduct();
+
+  const handleViewProduct = (produto: any) => {
+    setProduct({
+      id: produto.id,
+      image: produto.image,
+      price: produto.price,
+      oldPrice: produto.oldPrice,
+      description: produto.description,
+      category: produto.category,
+      type: produto.type,
+    });
+
+    router.push("/visualizarproduto");
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,6 +139,8 @@ export default function Home() {
     //@ts-expect-error
     return produtos.filter((produto) => produto.category === category);
   };
+
+
   return (
     <>
       {loading ? (
@@ -136,12 +156,14 @@ export default function Home() {
             <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
               {/* Logo */}
               <div className="flex-shrink-0 hidden sm:flex">
+                <Link href="/">
                 <Image
                   src={"./logo-full.svg"}
                   width={200}
                   height={10}
                   alt="eu"
                 />
+                </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
                 <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
@@ -278,9 +300,8 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
@@ -325,9 +346,8 @@ export default function Home() {
               {categorias.slice(0, 5).map((category, index) => (
                 <div
                   key={category.id}
-                  className={`flex flex-col items-center    ${
-                    index > 3 ? "hidden sm:flex" : ""
-                  }`}
+                  className={`flex flex-col items-center    ${index > 3 ? "hidden sm:flex" : ""
+                    }`}
                 >
                   <Image
                     src={category.image}
@@ -414,9 +434,24 @@ export default function Home() {
                         </div>
                         <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">
                           {/* Botão Compre Agora */}
-                          <button className="bg-violet-500 text-white px-2 py-1 text-[0.7rem] rounded shadow-md hover:bg-violet-700">
+
+                          <button
+                           className="bg-violet-500 text-white px-2 py-1 text-[0.7rem] rounded shadow-md hover:bg-violet-700"
+                            onClick={() =>
+                              handleViewProduct({
+                                id: produto.id,
+                                image: produto.image,
+                                currentPrice: produto.price,
+                                oldPrice: produto.oldPrice,
+                                description: produto.description,
+                                category: produto.category,
+                                type: "Venda",
+                              })
+                            }
+                          >
                             Compre agora
                           </button>
+                         
 
                           {/* Ícones */}
                           <div className="flex items-center gap-4">

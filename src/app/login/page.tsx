@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { collection, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
@@ -16,11 +16,6 @@ import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 
-type Category = {
-  id: string;
-  category: string;
-  image: string;
-};
 export default function Home() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
@@ -29,7 +24,7 @@ export default function Home() {
     { id: 4, name: "Esporte e Lazer" },
     { id: 5, name: "Animais de Estimação" },
   ];
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  // const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { login } = useAuth();
@@ -57,8 +52,10 @@ export default function Home() {
     fetchCategories();
   }, []);
 
-  const [produtos, setProdutos] = useState([]);
+  // const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  console.log("🚀 ~ Home ~ produtosCompras:", produtosCompras);
+
   const router = useRouter();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -202,9 +199,8 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li

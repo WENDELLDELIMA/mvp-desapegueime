@@ -9,13 +9,22 @@ import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
 import {
   Bell,
+  Check,
+  Copy,
   Grid,
   Heart,
+  HomeIcon,
   LogOut,
   MessageCircle,
+  MessagesSquare,
   ShoppingBag,
   ShoppingCart,
+  Star,
+  StarIcon,
+  ThumbsDown,
+  ThumbsUp,
   User,
+  X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -24,14 +33,9 @@ import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
-import FilterSidebar from "../components/FilterSidebar";
+import { useProduct } from "@/context/productContext";
 
-// type Category = {
-//   id: string;
-//   category: string;
-//   image: string;
-// };
-export default function Home() {
+export default function VisualizarProduto() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
     { id: 2, name: "Games" },
@@ -43,45 +47,19 @@ export default function Home() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [categorias, setCategorias] = useState<Category[]>([]);
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // Obter dados da coleção "categorias" no Firestore
+  const [loading, setLoading] = useState(false);
 
-        const querySnapshot = await getDocs(collection(db, "categorias"));
-
-        // Transformar os documentos em um array de objetos
-        const categoriesWithImages = querySnapshot.docs.map((doc) => ({
-          id: doc.id, // Adicionar ID do documento
-          ...(doc.data() as { category: string }), // Pega os campos do documento
-        }));
-        //@ts-expect-error
-        setCategorias(categoriesWithImages);
-      } catch (error) {
-        console.error("Erro ao buscar categorias no Firebase:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+
+  const { product } = useProduct();
+
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Buscar categorias
-
-        const categoriasSnapshot = await getDocs(collection(db, "categorias"));
-        const categoriasData = categoriasSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        // @ts-expect-error
-        setCategorias(categoriasData);
 
         // Buscar produtos
         const q = query(collection(db, "produtos"), where("type", "==", ""));
@@ -117,10 +95,10 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const getProdutosPorCategoria = (p0?: string) => {
-    console.log("🚀 ~ getProdutosPorCategoria ~ p0:", p0);
-    return produtos;
-  };
+  if (!product) {
+    return <p>Produto não encontrado</p>;
+  }
+
   return (
     <>
       {loading ? (
@@ -136,12 +114,14 @@ export default function Home() {
             <div className="container flex items-center justify-around sm:justify-between gap-4 sm:gap-20 p-2">
               {/* Logo */}
               <div className="flex-shrink-0 hidden sm:flex">
-                <Image
-                  src={"./logo-full.svg"}
-                  width={200}
-                  height={10}
-                  alt="eu"
-                />
+                <Link href="/">
+                  <Image
+                    src={"./logo-full.svg"}
+                    width={200}
+                    height={10}
+                    alt="eu"
+                  />
+                </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
                 <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
@@ -278,9 +258,8 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
@@ -295,90 +274,351 @@ export default function Home() {
             </nav>
           </div>
 
-          <div className="flex flex-col gap-8 mt-12">
-            <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
-              {/* Nome da Categoria */}
-              <div className="flex items-top justify-between">
-                <h1 className="font-semibold pb-8 text-xl text-black">
-                  Anuncios Relacionados
-                </h1>
-                <span className="items-center flex h-full">
-                  ver todos <span className="text-xl"> {" >"} </span>
-                </span>
+          {/* Caminho de pão - breadcrumb */}
+          <div className="hidden px-72 py-2 sm:flex gap-2 h-20 content-center items-center border-b border-violet-500">
+            <Link href="/"><HomeIcon className="text-gray-700" /></Link>
+            <span className="text-gray-700">Home</span> / <span>{product.description}</span>
+          </div>
+
+          <div className="flex sm:hidden">
+            <div className="px-4 flex flex-row gap-2 py-2 content-center items-center text-xs justify-between">
+              <span className="text-gray-500">Vendido por <span className="text-violet-500">Luis Alves</span></span>
+              <div className="flex content-center items-center gap-1">
+                <span className="text-gray-600">4,5</span> <StarIcon className="w-4" /><StarIcon className="w-4" /><StarIcon className="w-4" /><StarIcon className="w-4" /> <span className="text-gray-600">(68)</span>
+              </div>
+            </div>
+            <span className="px-4 text-gray-600">{product.description} - Usado</span>
+          </div>
+
+          <div className="flex flex-row mt-12 sm:px-44 sm:h-[40vh]">
+            <div className="flex flex-row gap-6 w-full ">
+              {/* Seção de imagens */}
+              <div className="flex sm:flex-col flex-row gap-3 mt-1">
+                <Image
+                  src={product.image}
+                  alt={product.description}
+                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
+                  width={90}
+                  height={80}
+                />
+                <Image
+                  src={product.image}
+                  alt={product.description}
+                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
+                  width={90}
+                  height={80}
+                />
+                <Image
+                  src={product.image}
+                  alt={product.description}
+                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
+                  width={90}
+                  height={80}
+                />
+                <Image
+                  src={product.image}
+                  alt={product.description}
+                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
+                  width={90}
+                  height={80}
+                />
               </div>
 
-              {/* Produtos da Categoria */}
-              <div className="grid grid-cols-4 gap-4 space-x-10">
+              {/* Imagem principal */}
+              <div className="w-3/4">
+                <Image
+                  src={product.image}
+                  alt={product.description}
+                  className="h-full w-full object-cover rounded-sm shadow-md"
+                  width={90}
+                  height={80}
+                />
+              </div>
+
+              {/* Informações do produto */}
+              <div className="flex flex-col justify-between content-center  w-2/4 mb-2">
                 <div>
-                  <FilterSidebar />
+                  <h3 className="text-3xl font-bold">{product.description}</h3>
+                  <p className="text-gray-600">
+                    Descrição de venda do produto {product.description}
+                  </p>
+                </div>
+                <div className="my-4">
+                  <span className="text-3xl font-bold">R${product.oldPrice},00</span>
+                  <p className="text-sm text-gray-500">
+                    Última Oferta: R$390,00 <span className="text-gray-400">25min</span>
+                  </p>
+                </div>
+                <div className="flex gap-4 mt-16 content-center items-center w-full">
+                  <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-44">
+                    Comprar
+                  </button>
+                  <button className="border border-violet-500 text-violet-500 px-6 py-2 rounded-md w-44 hover:bg-violet-500 hover:text-white">
+                    Fazer Oferta
+                  </button>
+                  <ShoppingCart
+                    size={28}
+                    className="cursor-pointer hover:text-violet-700"
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-1  justify-start col-span-3">
-                  {getProdutosPorCategoria("").map((produto: any) => (
-                    <div
-                      key={produto.id}
-                      className="flex flex-row items-center  rounded-lg shadow-md w-full gap-8 mt-2"
-                    >
-                      <div className="relative h-[12rem]">
-                        {/* Imagem */}
-                        <Image
-                          src={produto.image}
-                          alt={produto.description}
-                          className="h-full  min-w-72 rounded-md"
-                          width={100}
-                          height={100}
-                        />
-                      </div>
-                      <div className=" flex  flex-col w-full  items-start gap-4 p-4">
-                        <h2 className="font-semibold text-lg text-black   ">
-                          {produto.description}
-                        </h2>
-                        <div className="flex w-full items-center gap-4">
-                          <div className="w-full justify-between flex items-center">
-                            <span className="text-foreground font-bold text-lg">
-                              R$ {produto.currentPrice.toFixed(2)}
-                            </span>
 
-                            <span className="text-gray-400 line-through text-sm">
-                              R$ {produto.oldPrice.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className=" w-full flex items-center justify-around py-2 px-2 gap-4 flex-grow">
-                            {/* Botão Compre Agora */}
-                            <button className="bg-violet-500 text-white px-2 py-1 text-[1rem] rounded shadow-md hover:bg-violet-700">
-                              Compre agora
-                            </button>
-                            <button className="bg-white-500 text-foreground border border-foreground px-2 py-1 text-[1rem] rounded shadow-md hover:bg-violet-700">
-                              Fazer Oferta
-                            </button>
-                            {/* Ícones */}
-                            <div className="flex items-center gap-4">
-                              {/* Carrinho */}
-                              <ShoppingBag
-                                size={18}
-                                className="cursor-pointer hover:text-violet-700"
-                              />
-                              {/* Favoritar */}
-                              <Heart
-                                size={18}
-                                className="cursor-pointer hover:text-violet-500"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Heart
+                      size={12}
+                      className="cursor-pointer text-gray-700 hover:text-violet-500"
+                    />
+                    <span className="text-gray-700">Lista de desejos</span>
+                  </div>
+                  <div className="text-gray-700 flex gap-2 content-center">
+                    <p>Compartilhar Produto</p>
+                    <p className="text-sm"><Copy size={12}
+                      className="cursor-pointer text-gray-700 hover:text-violet-500" /></p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Perfil do Anunciante */}
+            <div className="ml-12 w-1/3 p-4 border-l">
+              <h4 className="text-lg font-bold">Perfil do Anunciante</h4>
+              <div className="flex items-center mt-4">
+                <div className="w-12 h-12 bg-gray-200 rounded-full">
+                  <Image
+                    src={'https://maikon.biz/wp-content/uploads/2020/06/gerador-de-persona-maikonbiz.png'}
+                    alt={product.description}
+                    className=" object-cover rounded-sm cursor-pointer"
+                    width={100}
+                    height={100}
+                  />
+                </div>
+                <div className="ml-4 flex gap-1">
+                  <div>
+                    <p className="text-sm font-medium">Marcos Silva</p>
+                    <p className="text-sm text-gray-500">Cidade Quadrinhos - CI</p>
+                    <div className="text-sm flex flex-row content-center">
+                      <span>5,0 </span>
+                      <Star className="w-4 text-yellow-500" />
+                      <Star className="w-4 text-yellow-500" />
+                      <Star className="w-4 text-yellow-500" />
+                      <Star className="w-4 text-yellow-500" />
+                      <Star className="w-4 text-yellow-500" />
+                    </div>
+                  </div>
+                  <button className="border border-violet-500 text-violet-500 rounded-md hover:bg-violet-500 hover:text-white w-14 h-5 text-xs">
+                    Seguir
+                  </button>
+                  <MessagesSquare className="bg-violet-500 text-white rounded-full hover:bg-violet-500 p-0.5" />
+                </div>
+              </div>
+              <div className="mt-4 text-sm">
+                <p>
+                  <span className="font-bold text-gray-600">Vendas Realizadas:</span> 55
+                </p>
+                <p>
+                  <span className="font-bold text-gray-600">Tempo Médio de Envio:</span> 7 Dias
+                </p>
+              </div>
+
+            </div>
           </div>
+
+          <hr className="mt-10 mx-44" />
+
+          {/* Comentários e ofertas  */}
+          <div className="grid grid-cols-3 mt-10 px-44 ">
+            {/* Campo para perguntar ao vendedor */}
+            <div className="col-span-2 px-14">
+              <div className="w-full">
+                <input
+                  type="text"
+                  id="basic-input"
+                  className=" rounded-md ml-10 h-10 w-4/5 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
+                  placeholder="Pergunte ao vendedor"
+                />
+                <button className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 ">
+                  Perguntar
+                </button>
+              </div>
+
+              {/* Sessão de comentários */}
+              <div className="grid gap-6 content-center items-center mt-12">
+
+                <div>
+                  <div className="flex gap-2">
+                    <Image
+                      src={'https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg'}
+                      alt={product.description}
+                      className=" object-cover rounded-full w-20 h-20"
+                      width={150}
+                      height={80}
+                    />
+
+                    <div className="border border-violet-500 rounded-md p-4 text-gray-600 w-full">
+                      <b className="text-gray-700">André P.</b>
+                      <p>Essa edição dos X-Men está em boas condições? Há algum dano visível nas páginas, capa ou lombada?</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-row gap-2 justify-end mr-5 mt-2 text-gray-600">
+                    <ThumbsUp /> <p>25</p>
+                    <ThumbsDown /> <p>5</p>
+                  </div>
+                </div>
+
+
+                {/* Resposta do vendedor */}
+                <div>
+                  <div className="flex ml-20 gap-2">
+                    <Image
+                      src={'https://static.vecteezy.com/ti/fotos-gratis/t2/47462753-positivo-homem-em-limpar-limpo-fundo-foto.jpg'}
+                      alt={product.description}
+                      className=" object-cover rounded-full w-20 h-20"
+                      width={150}
+                      height={80}
+                    />
+
+                    <div className="border border-l-8 border-violet-500 rounded-md p-4 text-gray-600">
+                      <b className="text-gray-700">Marcos Silva</b>
+                      <p>Sim, esta edição dos X-Men está em excelentes condições. Não há danos visíveis na capa, lombada ou páginas.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex gap-2">
+                    <Image
+                      src={'https://media.istockphoto.com/id/512819336/pt/foto/vista-lateral-do-jovem-sobre-fundo-colorido.jpg?s=612x612&w=0&k=20&c=_xfhf_kbPAzrqY9TsfMj29XnBL9fYK7Q7anvb4ENnnM='}
+                      alt={product.description}
+                      className=" object-cover rounded-full w-20 h-20"
+                      width={150}
+                      height={80}
+                    />
+
+                    <div className="border border-violet-500 rounded-md p-2 text-gray-600 w-full">
+                      <b className="text-gray-700">Lucas S.</b>
+                      <p>Oi, tudo bem? Para facilitar, podemos finalizar a negociação por outro site, como o WhatsApp. Fica mais rápido! Vou te passar o link por aqui.</p>
+                    </div>
+                  </div>
+                  <div className="border border-l-8 border-red-500 rounded-md p-4 text-gray-600 mt-2 end-0 text-sm ml-44">
+                    <b className="text-gray-700">Aviso: Conteúdo fora das diretrizes</b>
+                    <p>Detectamos que a conversa inclui menção a sites externos para negociação ou finalização da transação.
+                      Lembramos que, para sua segurança e para garantir o cumprimento de nossas políticas, negociações devem ser realizadas exclusivamente através da plataforma <br /> Desapeguei.me.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-full">
+              <h3 className="text-3xl py-5">Histórico de ofertas</h3>
+              <div>
+                <div className="flex gap-2 items-center">
+                  <Image
+                    src={'https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg'}
+                    alt={product.description}
+                    className=" object-cover rounded-full w-20 h-20"
+                    width={150}
+                    height={80}
+                  />
+
+                  <div>
+                    <b className="text-gray-700">André P.</b>
+                    <div className="border-2 border-green-500 rounded-md p-4 h-20 text-gray-600 w-80  flex content-center items-center justify-between">
+                      <p className="text-lg px-6">Ofertou R$ 390,00</p>
+                      <div className="gap-3 flex flex-col">
+                        <Check className="text-green-500" />
+                        <span className="text-xs justify-end float-end sticky bottom-0">25 min</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div>
+                <div className="flex gap-2 items-center mt-6">
+                  <Image
+                    src={'https://www.psicologo.com.br/wp-content/uploads/sou-uma-pessoa-boa-ou-nao.jpg'}
+                    alt={product.description}
+                    className=" object-cover rounded-full w-20 h-20"
+                    width={150}
+                    height={80}
+                  />
+
+                  <div>
+                    <b className="text-gray-700">Fabio H.</b>
+                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
+                      <p className="text-lg px-6">Ofertou R$ 350,00</p>
+                      <div className="gap-3 flex flex-col">
+                        <X className="text-red-500" />
+                        <span className="text-xs justify-end float-end sticky bottom-0">2h</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div>
+                <div className="flex gap-2 items-center mt-6">
+                  <Image
+                    src={'https://blog.unyleya.edu.br/wp-content/uploads/2017/12/saiba-como-a-educacao-ajuda-voce-a-ser-uma-pessoa-melhor.jpeg'}
+                    alt={product.description}
+                    className=" object-cover rounded-full w-20 h-20"
+                    width={150}
+                    height={80}
+                  />
+
+                  <div>
+                    <b className="text-gray-700">Leticia A.</b>
+                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
+                      <p className="text-lg px-6">Ofertou R$ 350,00</p>
+                      <div className="gap-3 flex flex-col">
+                        <X className="text-red-500" />
+                        <span className="text-xs justify-end float-end sticky bottom-0">1d</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div>
+                <div className="flex gap-2 items-center mt-6">
+                  <Image
+                    src={'https://mundoemrevista.com.br/wp-content/uploads/2024/05/pessoa-de-classe-elegante.webp'}
+                    alt={product.description}
+                    className=" object-cover rounded-full w-20 h-20"
+                    width={150}
+                    height={80}
+                  />
+
+                  <div>
+                    <b className="text-gray-700">Leticia A.</b>
+                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
+                      <p className="text-lg px-6">Ofertou R$ 360,00</p>
+                      <div className="gap-3 flex flex-col">
+                        <X className="text-red-500" />
+                        <span className="text-xs justify-end float-end sticky bottom-0">3d</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+
+          {/* quem comprou também viu */}
           <div className="flex flex-col gap-4 sm:gap-8 mt-12">
+
             <div className="flex flex-col m-auto w-[90%] sm:w-[72%]">
               {/* Nome da Categoria */}
               <div className="flex items-top justify-between">
                 <h1 className="font-semibold pb-8 text-lg text-gray-500">
-                  Estão querendo comprar
+                  Quem comprou também viu
                 </h1>
                 <span className="items-center flex h-full">
                   ver todos <span className="text-xl"> {" >"} </span>
@@ -387,7 +627,7 @@ export default function Home() {
 
               {/* Produtos em Grid Responsivo */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 justify-start">
-                {produtosCompras.map((produto) => (
+                {produtosCompras.slice(0, 4).map((produto) => (
                   <div
                     key={produto.id}
                     className="flex flex-col items-center border rounded-lg shadow-md w-full"
@@ -463,25 +703,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="w-full flex items-center justify-center mt-20">
-            <div className="container justify-center flex">
-              <Image
-                src={"./banner-procurando.svg"}
-                alt="eu"
-                width={1300}
-                height={300}
-                className="w-[90%] h-auto hidden sm:block"
-              />
 
-              <Image
-                src={"./procurando.svg"}
-                alt="eu"
-                width={1300}
-                height={300}
-                className="w-[90%] h-auto sm:hidden block"
-              />
-            </div>
-          </div>
+          {/* Rodapé */}
           <footer className="bg-violet-500 text-white py-6 mt-10">
             <div className="container mx-auto px-4">
               {/* Links principais */}
