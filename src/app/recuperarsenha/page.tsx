@@ -7,7 +7,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
@@ -27,7 +27,7 @@ export default function Home() {
     { id: 4, name: "Esporte e Lazer" },
     { id: 5, name: "Animais de Estimação" },
   ];
-  const [categorias, setCategorias] = useState<Category[]>([]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
@@ -55,7 +55,6 @@ export default function Home() {
   }, []);
 
   const [produtos, setProdutos] = useState([]);
-  const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
 
   const handleSubmit = () => {
     alert(10);
@@ -107,12 +106,7 @@ export default function Home() {
 
     fetchData();
   }, []);
-  //@ts-expect-error
-  const getProdutosPorCategoria = (category) => {
-    console.log(10);
-    //@ts-expect-error
-    return produtos.filter((produto) => produto.category === category);
-  };
+
   return (
     <>
       {loading ? (

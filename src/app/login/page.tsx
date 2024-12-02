@@ -7,14 +7,14 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
-import { Heart, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 import loadingAnimation from "../../../public/animations/animation.json";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 type Category = {
   id: string;
@@ -29,7 +29,7 @@ export default function Home() {
     { id: 4, name: "Esporte e Lazer" },
     { id: 5, name: "Animais de Estimação" },
   ];
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  // const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { login } = useAuth();
@@ -57,8 +57,8 @@ export default function Home() {
     fetchCategories();
   }, []);
 
-  const [produtos, setProdutos] = useState([]);
-  const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
+  // const [produtos, setProdutos] = useState([]);
+  // const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
   const router = useRouter();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

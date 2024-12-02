@@ -42,7 +42,7 @@ export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [categorias, setCategorias] = useState<Category[]>([]);
+  // const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -116,8 +116,8 @@ export default function Home() {
 
     fetchData();
   }, []);
-  //@ts-expect-error
-  const getProdutosPorCategoria = (category) => {
+
+  const getProdutosPorCategoria = () => {
     return produtos;
   };
   return (
