@@ -3,13 +3,17 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { addDoc, collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
+
+
 import {
+  AlertTriangle,
   Bell,
   Check,
+  Clock,
   Copy,
   Grid,
   Heart,
@@ -17,6 +21,7 @@ import {
   LogOut,
   MessageCircle,
   MessagesSquare,
+  Send,
   ShoppingBag,
   ShoppingCart,
   Star,
@@ -48,13 +53,17 @@ export default function VisualizarProduto() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [categorias, setCategorias] = useState<Category[]>([]);
 
+
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [oferta, setOferta] = useState(false);
 
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
 
   const { product, setProduct } = useProduct();
-  const [mainImage, setMainImage] = useState(product?.images?.[0]);
+  const [mainImage, setMainImage] = useState(product?.images?.[0] || 'https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ=');
 
 
   useEffect(() => {
@@ -110,12 +119,13 @@ export default function VisualizarProduto() {
     return produtos.filter((produto) => produto.category === category);
   };
 
+
+  // ------------------------------- Comentários ----------------------------------- /
+
   const [comentarios, setComentarios] = useState<any[]>([]);
   const [novoComentario, setNovoComentario] = useState("");
 
   const productId = product?.id || "default-product-id";
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -156,9 +166,86 @@ export default function VisualizarProduto() {
     }
   };
 
+
+  // ------------------ OFERTAS ----------------------- //
+
+  const [ofertas, setOfertas] = useState<any[]>([]);
+  const [novaOferta, setNovaOferta] = useState("");
+  const [offerError, setOfferError] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const ofertasRef = collection(db, "products", productId, "offers");
+
+        const unsubscribe = onSnapshot(ofertasRef, (snapshot) => {
+          const ofertasAtualizadas = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setOfertas(ofertasAtualizadas);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Erro ao buscar ofertas:", error);
+      }
+    };
+
+    fetchData();
+  }, [productId]);
+
+
+
+
+  const enviarOferta = async () => {
+    if (!novaOferta.trim()) return;
+
+    try {
+      if (product?.user !== user?.username) {
+        await addDoc(collection(db, "products", productId, "offers"), {
+          userName: user?.username || "Anônimo",
+          price: novaOferta,
+          createdAt: new Date(),
+          status: '',
+        });
+      } else {
+        setOfferError("Você não pode fazer uma oferta no proprio item.")
+      }
+
+      setNovaOferta("");
+    } catch (error) {
+      console.error("Erro ao adicionar comentário: ", error);
+    }
+  };
+
   if (!product) {
     return <p>Produto não encontrado</p>;
   }
+
+
+  const atualizarStatusOferta = async (ofertaId: string, status: string, productId: string, ofertas: any[]) => {
+    try {
+      const ofertaRef = doc(db, "products", productId, "offers", ofertaId);
+
+      // Atualizar o status da oferta selecionada
+      await updateDoc(ofertaRef, { status });
+
+      console.log(`Oferta ${ofertaId} atualizada para ${status}`);
+
+      // Caso o status seja "aceita", recusar as outras ofertas
+      if (status === "aceita") {
+        for (const oferta of ofertas) {
+          if (oferta.id !== ofertaId) {
+            const outraOfertaRef = doc(db, "products", productId, "offers", oferta.id);
+            await updateDoc(outraOfertaRef, { status: "recusada" });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar status da oferta:", error);
+    }
+  };
 
 
 
@@ -219,7 +306,7 @@ export default function VisualizarProduto() {
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                       >
                         <Image
-                          src="logo.svg" // Substitua pela URL do avatar do usuário
+                          src="logo.svg"
                           alt="Avatar"
                           width={5}
                           height={5}
@@ -383,7 +470,7 @@ export default function VisualizarProduto() {
               {/* Imagem principal */}
               <div className="w-3/4">
                 <Image
-                  src={mainImage} // Usando o estado como fonte
+                  src={mainImage}
                   alt={product.name}
                   className="h-full w-full rounded-sm object-contain shadow-md"
                   width={300}
@@ -405,22 +492,63 @@ export default function VisualizarProduto() {
                     R${product.price},00
                   </span>
                   <p className="text-sm text-gray-500">
-                    Última Oferta: R$390,00{" "}
-                    <span className="text-gray-400">25min</span>
+                    Última Oferta:{" "}
+                    {ofertas.length > 0 ? (
+                      <>
+                        R$ {ofertas[ofertas.length - 1].price},00{" "}
+                        <span className="text-gray-400">
+                          {/* Exibe quanto tempo se passou desde a oferta */}
+                          - {new Date(ofertas[ofertas.length - 1].createdAt.seconds * 1000).toLocaleTimeString()}
+                        </span>
+                      </>
+                    ) : (
+                      "Nenhuma oferta ainda"
+                    )}
                   </p>
                 </div>
-                <div className="flex gap-4 mt-12 content-center items-center w-full">
+                {oferta ? <>
+                  <p className="text-xs empty:hidden text-red-500">{offerError}</p>
+                  <div className="flex w-full mt-2 content-center items-center gap-3">
+                    <input
+                      type="number"
+                      id="basic-input"
+                      onChange={(e) => setNovaOferta(e.target.value)}
+                      className=" rounded-md h-10 w-5/6 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
+                      placeholder="Enviar oferta"
+                    />
+
+                    <button
+                      className=""
+                      onClick={enviarOferta}
+                    >
+                      <Send className="w-4" />
+                    </button>
+
+                    <button
+                      className=""
+                      onClick={() => setOferta(false)}
+                    >
+                      <X className="text-red-500" />
+                    </button>
+                  </div>
+
+                </> : ''}
+                <div className="flex gap-4 content-center items-center w-full">
                   <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-44">
                     Comprar
                   </button>
-                  <button className="border border-violet-500 text-violet-500 px-6 py-2 rounded-md w-44 hover:bg-violet-500 hover:text-white">
+                  <button
+                    onClick={() => setOferta(!oferta)}
+                    className="border border-violet-500 text-violet-500 px-6 py-2 rounded-md w-44 hover:bg-violet-500 hover:text-white">
                     Fazer Oferta
                   </button>
                   <ShoppingCart
                     size={28}
                     className="cursor-pointer hover:text-violet-700"
                   />
+
                 </div>
+
 
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
@@ -504,12 +632,12 @@ export default function VisualizarProduto() {
           <div className="grid grid-cols-3 mt-10 px-44 ">
             {/* Campo para perguntar ao vendedor */}
             <div className="col-span-2 px-14">
-              <div className="w-full">
+              <div className="grid grid-cols-4">
                 <input
                   type="text"
                   id="basic-input"
                   onChange={(e) => setNovoComentario(e.target.value)}
-                  className=" rounded-md ml-10 h-10 w-4/5 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
+                  className=" rounded-md ml-10 h-10 col-span-3 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
                   placeholder="Pergunte ao vendedor"
                 />
 
@@ -517,7 +645,7 @@ export default function VisualizarProduto() {
                   className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 "
                   onClick={adicionarComentario}
                 >
-                  Perguntar
+                  {product.user === user?.username ? "Responder" : "Perguntar"}
                 </button>
               </div>
 
@@ -573,175 +701,98 @@ export default function VisualizarProduto() {
                     </div>
                 ))}
 
-
-                {/* Resposta do vendedor */}
-                {/* <div>
-                  <div className="flex ml-20 gap-2">
-                    <Image
-                      src={
-                        "https://static.vecteezy.com/ti/fotos-gratis/t2/47462753-positivo-homem-em-limpar-limpo-fundo-foto.jpg"
-                      }
-                      alt={product.name}
-                      className=" object-cover rounded-full w-20 h-20"
-                      width={150}
-                      height={80}
-                    />
-
-                    <div className="border border-l-8 border-violet-500 rounded-md p-4 text-gray-600">
-                      <b className="text-gray-700">Marcos Silva</b>
-                      <p>
-                        Sim, esta edição dos X-Men está em excelentes condições.
-                        Não há danos visíveis na capa, lombada ou páginas.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col">
-                  <div className="flex gap-2">
-                    <Image
-                      src={
-                        "https://media.istockphoto.com/id/512819336/pt/foto/vista-lateral-do-jovem-sobre-fundo-colorido.jpg?s=612x612&w=0&k=20&c=_xfhf_kbPAzrqY9TsfMj29XnBL9fYK7Q7anvb4ENnnM="
-                      }
-                      alt={product.name}
-                      className=" object-cover rounded-full w-20 h-20"
-                      width={150}
-                      height={80}
-                    />
-
-                    <div className="border border-violet-500 rounded-md p-2 text-gray-600 w-full">
-                      <b className="text-gray-700">Lucas S.</b>
-                      <p>
-                        Oi, tudo bem? Para facilitar, podemos finalizar a
-                        negociação por outro site, como o WhatsApp. Fica mais
-                        rápido! Vou te passar o link por aqui.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border border-l-8 border-red-500 rounded-md p-4 text-gray-600 mt-2 end-0 text-sm ml-44">
-                    <b className="text-gray-700">
-                      Aviso: Conteúdo fora das diretrizes
-                    </b>
-                    <p>
-                      Detectamos que a conversa inclui menção a sites externos
-                      para negociação ou finalização da transação. Lembramos
-                      que, para sua segurança e para garantir o cumprimento de
-                      nossas políticas, negociações devem ser realizadas
-                      exclusivamente através da plataforma <br /> Desapeguei.me.
-                    </p>
-                  </div>
-                </div> */}
               </div>
             </div>
 
             <div className="h-full">
               <h3 className="text-3xl py-5">Histórico de ofertas</h3>
-              <div>
-                <div className="flex gap-2 items-center">
-                  <Image
-                    src={
-                      "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
-                    }
-                    alt={product.name}
-                    className=" object-cover rounded-full w-20 h-20"
-                    width={150}
-                    height={80}
-                  />
+              {/* Ofertas */}
+              <div className="overflow-auto h-96">
+                {product.user === user?.username ? <>
+                  {ofertas
+                    // .filter((oferta) => oferta.status !== "")
+                    .map((oferta) => (
+                      <div key={oferta.id} className="mt-4">
+                        <div className="flex gap-2 items-center">
+                          <Image
+                            src={
+                              "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
+                            }
+                            alt={product.name}
+                            className=" object-cover rounded-full w-20 h-20"
+                            width={150}
+                            height={80}
+                          />
+                          <div>
+                            <b className="text-gray-700">{oferta.userName}</b>
+                            <div className={`border-2 ${oferta.status === '' ? "border-gray-500" : oferta.status === 'recusada' ? "border-red-500" : "border-green-500"} rounded-md p-4 h-20 text-gray-600 w-80  flex content-center items-center justify-between`}>
+                              <p className="text-lg px-6">Ofertou R$ {oferta.price}</p>
+                              <div className="gap-3 flex flex-col">
+                                <div className="gap-1 flex">
+                                  {oferta.status === "" ?
+                                    <>
+                                      {oferta?.id && (
+                                        <>
+                                          <button
+                                            onClick={() =>
+                                              atualizarStatusOferta(oferta.id, "recusada", productId, ofertas)
+                                            }
+                                          >
+                                            <X className="text-red-500" />
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              atualizarStatusOferta(oferta.id, "aceita", productId, ofertas)
+                                            }
+                                          >
+                                            <Check className="text-green-500" />
+                                          </button>
+                                        </>
+                                      )}</> : oferta.status === '' ? <Clock className="text-gray-500" /> : oferta.status === 'recusada' ? <X className="text-red-500" /> : <Check className="text-green-500" />
+}
 
-                  <div>
-                    <b className="text-gray-700">André P.</b>
-                    <div className="border-2 border-green-500 rounded-md p-4 h-20 text-gray-600 w-80  flex content-center items-center justify-between">
-                      <p className="text-lg px-6">Ofertou R$ 390,00</p>
-                      <div className="gap-3 flex flex-col">
-                        <Check className="text-green-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">
-                          25 min
-                        </span>
+                                </div>
+                                <span className="text-xs justify-end float-end sticky bottom-0">
+                                  {new Date(oferta.createdAt.seconds * 1000).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex gap-2 items-center mt-6">
-                  <Image
-                    src={
-                      "https://www.psicologo.com.br/wp-content/uploads/sou-uma-pessoa-boa-ou-nao.jpg"
-                    }
-                    alt={product.name}
-                    className=" object-cover rounded-full w-20 h-20"
-                    width={150}
-                    height={80}
-                  />
-
-                  <div>
-                    <b className="text-gray-700">Fabio H.</b>
-                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
-                      <p className="text-lg px-6">Ofertou R$ 350,00</p>
-                      <div className="gap-3 flex flex-col">
-                        <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">
-                          2h
-                        </span>
+                    ))}
+                </> : <>
+                  {ofertas
+                    // .filter((oferta) => oferta.status !== "")
+                    .map((oferta) => (
+                      <div key={oferta.id} className="mt-4">
+                        <div className="flex gap-2 items-center">
+                          <Image
+                            src={
+                              "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
+                            }
+                            alt={product.name}
+                            className=" object-cover rounded-full w-20 h-20"
+                            width={150}
+                            height={80}
+                          />
+                          <div>
+                            <b className="text-gray-700">{oferta.userName}</b>
+                            <div className={`border-2 ${oferta.status === '' ? "border-gray-500" : oferta.status === 'recusada' ? "Recusada" : "border-green-500"} rounded-md p-4 h-20 text-gray-600 w-80  flex content-center items-center justify-between`}>
+                              <p className="text-lg px-6">Ofertou R$ {oferta.price}</p>
+                              <div className="gap-3 flex flex-col">
+                                {oferta.status === '' ? <Clock className="text-gray-500" /> : oferta.status === 'recusada' ? <X className="text-red-500" /> : <Check className="text-green-500" />}
+                                <span className="text-xs justify-end float-end sticky bottom-0">
+                                  {new Date(oferta.createdAt.seconds * 1000).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    ))}
+                </>}
 
-              <div>
-                <div className="flex gap-2 items-center mt-6">
-                  <Image
-                    src={
-                      "https://blog.unyleya.edu.br/wp-content/uploads/2017/12/saiba-como-a-educacao-ajuda-voce-a-ser-uma-pessoa-melhor.jpeg"
-                    }
-                    alt={product.name}
-                    className=" object-cover rounded-full w-20 h-20"
-                    width={150}
-                    height={80}
-                  />
-
-                  <div>
-                    <b className="text-gray-700">Leticia A.</b>
-                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
-                      <p className="text-lg px-6">Ofertou R$ 350,00</p>
-                      <div className="gap-3 flex flex-col">
-                        <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">
-                          1d
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex gap-2 items-center mt-6">
-                  <Image
-                    src={
-                      "https://mundoemrevista.com.br/wp-content/uploads/2024/05/pessoa-de-classe-elegante.webp"
-                    }
-                    alt={product.name}
-                    className=" object-cover rounded-full w-20 h-20"
-                    width={150}
-                    height={80}
-                  />
-
-                  <div>
-                    <b className="text-gray-700">Leticia A.</b>
-                    <div className="border-2 border-red-500 rounded-md p-4 w-80 h-20 text-gray-600 flex content-center items-center justify-between">
-                      <p className="text-lg px-6">Ofertou R$ 360,00</p>
-                      <div className="gap-3 flex flex-col">
-                        <X className="text-red-500" />
-                        <span className="text-xs justify-end float-end sticky bottom-0">
-                          3d
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
