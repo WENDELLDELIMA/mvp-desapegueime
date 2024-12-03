@@ -31,6 +31,7 @@ type Category = {
   category: string;
   image: string;
 };
+
 export default function Home() {
   const menu = [
     { id: 1, name: "Moda e Beleza" },
@@ -383,7 +384,7 @@ export default function Home() {
                         key={produto.id}
                         className="flex flex-col items-center border rounded-lg shadow-md w-full"
                       >
-                        <div className="relative w-full h-[12rem]">
+                        <div className="relative w-full h-[12rem] ">
                           {/* Imagem */}
                           <Image
                             src={produto.images[0]}
@@ -427,7 +428,7 @@ export default function Home() {
                             {produto.condition}
                           </span>
                         </div>
-                        <div className="border-t-[1px] w-full flex items-center justify-around py-2 px-2 gap-4">
+                        <div className="border-t-[1px] w-full flex items-center justify-around py-2 gap-4">
                           {/* Botão Compre Agora */}
 
                           <button

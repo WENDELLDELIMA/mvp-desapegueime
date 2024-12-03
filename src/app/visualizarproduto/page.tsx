@@ -3,7 +3,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase";
@@ -54,22 +54,37 @@ export default function VisualizarProduto() {
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
 
   const { product, setProduct } = useProduct();
+  const [mainImage, setMainImage] = useState(product?.images?.[0]);
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Buscar categorias
+
+        const categoriasSnapshot = await getDocs(collection(db, "categorias"));
+        const categoriasData = categoriasSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // @ts-expect-error
+        setCategorias(categoriasData);
+
         // Buscar produtos
-        const q = query(collection(db, "products"));
+        const q = query(collection(db, "products"), where("type", "==", null));
 
         const produtosSnapshot = await getDocs(q);
         const produtosData = produtosSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        // @ts-expect-error
+        setProdutos(produtosData);
 
-        console.log(produtosData);
-
-        const qc = query(collection(db, "product"));
+        const qc = query(
+          collection(db, "produtos"),
+          where("type", "==", "Compra")
+        );
 
         const produtosSnapshotc = await getDocs(qc);
         const produtosDatac = produtosSnapshotc.docs.map((doc) => ({
@@ -88,10 +103,64 @@ export default function VisualizarProduto() {
 
     fetchData();
   }, []);
+  //@ts-expect-error
+  const getProdutosPorCategoria = (category) => {
+    console.log(10);
+    //@ts-expect-error
+    return produtos.filter((produto) => produto.category === category);
+  };
+
+  const [comentarios, setComentarios] = useState<any[]>([]);
+  const [novoComentario, setNovoComentario] = useState("");
+
+  const productId = product?.id || "default-product-id";
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const unsubscribe = onSnapshot(
+          collection(db, "products", productId, "comments"),
+          (snapshot) => {
+            const comments = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setComentarios(comments);
+          }
+        );
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    };
+
+    fetchData();
+  }, [productId]);
+
+  const adicionarComentario = async () => {
+    if (!novoComentario.trim()) return;
+
+    try {
+      await addDoc(collection(db, "products", productId, "comments"), {
+        userName: user?.username || "Anônimo",
+        content: novoComentario,
+        createdAt: new Date(),
+      });
+
+      setNovoComentario("");
+    } catch (error) {
+      console.error("Erro ao adicionar comentário: ", error);
+    }
+  };
 
   if (!product) {
     return <p>Produto não encontrado</p>;
   }
+
+
 
   return (
     <>
@@ -252,9 +321,8 @@ export default function VisualizarProduto() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
@@ -298,52 +366,36 @@ export default function VisualizarProduto() {
           <div className="flex flex-row mt-12 sm:px-44 sm:h-[40vh]">
             <div className="flex flex-row gap-6 w-full ">
               {/* Seção de imagens */}
-              <div className="flex sm:flex-col flex-row gap-3 mt-1">
-                <Image
-                  src={product.images?.[0]}
-                  alt={product.name}
-                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
-                  width={90}
-                  height={80}
-                />
-                <Image
-                  src={product.images?.[0]}
-                  alt={product.name}
-                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
-                  width={90}
-                  height={80}
-                />
-                <Image
-                  src={product.images?.[0]}
-                  alt={product.name}
-                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
-                  width={90}
-                  height={80}
-                />
-                <Image
-                  src={product.images?.[0]}
-                  alt={product.name}
-                  className="h-20 w-20 object-cover  rounded-sm cursor-pointer shadow-md"
-                  width={90}
-                  height={80}
-                />
+              <div className="flex sm:flex-col flex-row gap-3 mt-1 overflow-auto">
+                {product.images?.slice(0, 4).map((img, index) => (
+                  <Image
+                    key={index}
+                    src={img}
+                    alt={`${product.name} - ${index + 1}`}
+                    className="h-20 w-20 object-cover rounded-sm cursor-pointer shadow-md"
+                    width={90}
+                    height={80}
+                    onClick={() => setMainImage(img)}
+                  />
+                ))}
               </div>
 
               {/* Imagem principal */}
               <div className="w-3/4">
                 <Image
-                  src={product.images?.[0]}
+                  src={mainImage} // Usando o estado como fonte
                   alt={product.name}
-                  className="h-full w-full object-cover rounded-sm shadow-md"
-                  width={90}
-                  height={80}
+                  className="h-full w-full rounded-sm object-contain shadow-md"
+                  width={300}
+                  height={300}
                 />
               </div>
+
 
               {/* Informações do produto */}
               <div className="flex flex-col justify-between content-center  w-2/4 mb-2">
                 <div>
-                  <h3 className="text-3xl font-bold">{product.name}</h3>
+                  <h3 className="text-3xl font-bold">{product.name} - {product.condition}</h3>
                   <p className="text-gray-600">
                     Descrição de venda do produto {product.name}
                   </p>
@@ -357,7 +409,7 @@ export default function VisualizarProduto() {
                     <span className="text-gray-400">25min</span>
                   </p>
                 </div>
-                <div className="flex gap-4 mt-16 content-center items-center w-full">
+                <div className="flex gap-4 mt-12 content-center items-center w-full">
                   <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 w-44">
                     Comprar
                   </button>
@@ -394,39 +446,41 @@ export default function VisualizarProduto() {
             {/* Perfil do Anunciante */}
             <div className="ml-12 w-1/3 p-4 border-l">
               <h4 className="text-lg font-bold">Perfil do Anunciante</h4>
-              <div className="flex items-center mt-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full">
-                  <Image
-                    src={
-                      "https://maikon.biz/wp-content/uploads/2020/06/gerador-de-persona-maikonbiz.png"
-                    }
-                    alt={product.name}
-                    className=" object-cover rounded-sm cursor-pointer"
-                    width={100}
-                    height={100}
-                  />
-                </div>
-                <div className="ml-4 flex gap-1">
-                  <div>
-                    <p className="text-sm font-medium">Marcos Silva</p>
-                    <p className="text-sm text-gray-500">
-                      Cidade Quadrinhos - CI
-                    </p>
-                    <div className="text-sm flex flex-row content-center">
-                      <span>5,0 </span>
-                      <Star className="w-4 text-yellow-500" />
-                      <Star className="w-4 text-yellow-500" />
-                      <Star className="w-4 text-yellow-500" />
-                      <Star className="w-4 text-yellow-500" />
-                      <Star className="w-4 text-yellow-500" />
-                    </div>
+              <Link href="/perfilAnunciante" >
+                <div className="flex items-center mt-4">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full">
+                    <Image
+                      src={
+                        "https://maikon.biz/wp-content/uploads/2020/06/gerador-de-persona-maikonbiz.png"
+                      }
+                      alt={product.name}
+                      className=" object-cover rounded-sm cursor-pointer"
+                      width={100}
+                      height={100}
+                    />
                   </div>
-                  <button className="border border-violet-500 text-violet-500 rounded-md hover:bg-violet-500 hover:text-white w-14 h-5 text-xs">
-                    Seguir
-                  </button>
-                  <MessagesSquare className="bg-violet-500 text-white rounded-full hover:bg-violet-500 p-0.5" />
+                  <div className="ml-4 flex gap-1">
+                    <div>
+                      <p className="text-sm font-medium">{product.user}</p>
+                      <p className="text-sm text-gray-500">
+                        Localização do usuário
+                      </p>
+                      <div className="text-sm flex flex-row content-center">
+                        <span>5,0 </span>
+                        <Star className="w-4 text-yellow-500" />
+                        <Star className="w-4 text-yellow-500" />
+                        <Star className="w-4 text-yellow-500" />
+                        <Star className="w-4 text-yellow-500" />
+                        <Star className="w-4 text-yellow-500" />
+                      </div>
+                    </div>
+                    <button className="border border-violet-500 text-violet-500 rounded-md hover:bg-violet-500 hover:text-white w-14 h-5 text-xs">
+                      Seguir
+                    </button>
+                    <MessagesSquare className="bg-violet-500 text-white rounded-full hover:bg-violet-500 p-0.5" />
+                  </div>
                 </div>
-              </div>
+              </Link>
               <div className="mt-4 text-sm">
                 <p>
                   <span className="font-bold text-gray-600">
@@ -454,44 +508,74 @@ export default function VisualizarProduto() {
                 <input
                   type="text"
                   id="basic-input"
+                  onChange={(e) => setNovoComentario(e.target.value)}
                   className=" rounded-md ml-10 h-10 w-4/5 border shadow-sm sm:text-sm px-3 focus:outline-violet-500"
                   placeholder="Pergunte ao vendedor"
                 />
-                <button className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 ">
+
+                <button
+                  className="bg-violet-500 text-white px-6 py-2 ml-4 rounded-md hover:bg-violet-700 "
+                  onClick={adicionarComentario}
+                >
                   Perguntar
                 </button>
               </div>
 
               {/* Sessão de comentários */}
-              <div className="grid gap-6 content-center items-center mt-12">
-                <div>
-                  <div className="flex gap-2">
-                    <Image
-                      src={
-                        "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
-                      }
-                      alt={product.name}
-                      className=" object-cover rounded-full w-20 h-20"
-                      width={150}
-                      height={80}
-                    />
+              <div className="grid gap-4 content-center items-center mt-12">
 
-                    <div className="border border-violet-500 rounded-md p-4 text-gray-600 w-full">
-                      <b className="text-gray-700">André P.</b>
-                      <p>
-                        Essa edição dos X-Men está em boas condições? Há algum
-                        dano visível nas páginas, capa ou lombada?
-                      </p>
+                {comentarios.map((comentario) => (
+                  comentario.userName !== product.user ? <>
+                    <div key={comentario.id}>
+                      <div className="flex gap-2">
+                        <Image
+                          src={
+                            "https://img.freepik.com/fotos-gratis/retrato-de-homem-branco-isolado_53876-40306.jpg"
+                          }
+                          alt={product.name}
+                          className=" object-cover rounded-full w-20 h-20"
+                          width={150}
+                          height={80}
+                        />
+
+                        <div className="border border-violet-500 rounded-md p-4 text-gray-600 w-full">
+                          <b className="text-gray-700">{comentario.userName}</b>
+                          <p>
+                            {comentario.content}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-row gap-2 justify-end mr-5 mt-2 text-gray-600">
+                        <ThumbsUp /> <p>25</p>
+                        <ThumbsDown /> <p>5</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-row gap-2 justify-end mr-5 mt-2 text-gray-600">
-                    <ThumbsUp /> <p>25</p>
-                    <ThumbsDown /> <p>5</p>
-                  </div>
-                </div>
+                  </> :
+                    <div>
+                      <div className="flex ml-20 gap-2 w-full pr-20">
+                        <Image
+                          src={
+                            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                          }
+                          alt={product.name}
+                          className=" object-cover rounded-full w-20 h-20"
+                          width={150}
+                          height={80}
+                        />
+
+                        <div className="border border-l-8 border-violet-500 rounded-md p-4 text-gray-600 w-full">
+                          <b className="text-gray-700">{comentario.userName}</b>
+                          <p>
+                            {comentario.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                ))}
+
 
                 {/* Resposta do vendedor */}
-                <div>
+                {/* <div>
                   <div className="flex ml-20 gap-2">
                     <Image
                       src={
@@ -546,7 +630,7 @@ export default function VisualizarProduto() {
                       exclusivamente através da plataforma <br /> Desapeguei.me.
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
