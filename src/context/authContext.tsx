@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useLayoutEffect,
 } from "react";
 
 // Define o tipo do usuário
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
 
   // Recupera o usuário do localStorage quando o componente é montado
-  useEffect(() => {
+  useLayoutEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedPassword = localStorage.getItem("password");
     if (storedUser && storedPassword) {
