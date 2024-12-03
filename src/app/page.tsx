@@ -3,7 +3,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
@@ -46,11 +46,73 @@ export default function Home() {
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user?.username) return;
+
+      try {
+        const favoritesQuery = query(
+          collection(db, "favorites"),
+          where("userId", "==", user.username)
+        );
+        const snapshot = await getDocs(favoritesQuery);
+
+        const favoriteIds = snapshot.docs.map((doc) => doc.data().productId);
+        setFavorites(favoriteIds);
+      } catch (error) {
+        console.error("Erro ao buscar favoritos:", error);
+      }
+    };
+
+    fetchFavorites();
+  }, [user]);
+
+
+  // TODO: função para alternar os favoritos do usuário
+  const toggleFavorite = async (productId: string) => {
+    if (!user?.username) {
+      console.warn("Usuário não autenticado.");
+      return;
+    }
+
+    try {
+      if (favorites.includes(productId)) {
+        const favoritesQuery = query(
+          collection(db, "favorites"),
+          where("userId", "==", user.username),
+          where("productId", "==", productId)
+        );
+        const snapshot = await getDocs(favoritesQuery);
+
+        snapshot.forEach(async (doc) => {
+          await deleteDoc(doc.ref);
+        });
+
+        setFavorites((prev) => prev.filter((id) => id !== productId));
+        console.log("Produto removido dos favoritos:", productId);
+      } else {
+        await addDoc(collection(db, "favorites"), {
+          userId: user.username,
+          productId: productId,
+          timestamp: new Date(),
+        });
+
+        setFavorites((prev) => [...prev, productId]);
+        console.log("Produto adicionado aos favoritos:", productId);
+      }
+    } catch (error) {
+      console.error("Erro ao alternar favorito:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         // Obter dados da coleção "categorias" no Firestore
+        console.log("🚀 ~ awaitaddDoc ~ user:", user)
 
         const querySnapshot = await getDocs(collection(db, "categorias"));
 
@@ -294,9 +356,8 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${
-                    menuOpen ? "flex" : "hidden"
-                  } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${menuOpen ? "flex" : "hidden"
+                    } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
@@ -341,9 +402,8 @@ export default function Home() {
               {categorias.slice(0, 5).map((category, index) => (
                 <div
                   key={category.id}
-                  className={`flex flex-col items-center    ${
-                    index > 3 ? "hidden sm:flex" : ""
-                  }`}
+                  className={`flex flex-col items-center    ${index > 3 ? "hidden sm:flex" : ""
+                    }`}
                 >
                   <Image
                     src={category.image}
@@ -448,8 +508,12 @@ export default function Home() {
                             {/* Favoritar */}
                             <Heart
                               size={18}
-                              className="cursor-pointer hover:text-violet-500"
+                              className={`cursor-pointer ${favorites.includes(produto.id) ? "fill-violet-500" : "fill-none"
+                                }`}
+                              onClick={() => toggleFavorite(produto.id)}
                             />
+
+
                           </div>
                         </div>
                       </div>
@@ -538,8 +602,11 @@ export default function Home() {
                         {/* Favoritar */}
                         <Heart
                           size={18}
-                          className="cursor-pointer hover:text-red-500"
+                          className={`cursor-pointer ${favorites.includes(produto.id) ? "fill-violet-500" : "fill-none"
+                            }`}
+                          onClick={() => toggleFavorite(produto.id)}
                         />
+
                       </div>
                     </div>
                   </div>
