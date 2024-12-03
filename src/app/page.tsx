@@ -176,7 +176,7 @@ export default function Home() {
                   {!user ? (
                     // Botão de Login
                     <Link href={"login"} className="contents">
-                      <button className="bg-white rounded-md p-2 w-[150px] shadow-md flex justify-center items-center">
+                      <button className="bg-white rounded-md  w-[150px] shadow-md flex justify-center items-center p-[0.2rem]">
                         Entrar
                       </button>
                     </Link>
@@ -347,7 +347,7 @@ export default function Home() {
                   <Image
                     src={category.image}
                     alt={category.category}
-                    className="rounded-full h-[5rem] min-w-[5rem] sm:h-[12rem] sm:w-[12rem] hover:border-2 hover:border-foreground"
+                    className="rounded-full h-[5rem] min-w-[5rem]  sm:size-[12rem] hover:border-2 hover:border-foreground "
                     width={100}
                     height={100}
                   />

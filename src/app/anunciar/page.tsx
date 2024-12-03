@@ -46,6 +46,13 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    if (!user) {
+      alert("Para anunciar é necessario estar logado!");
+      router.push("login");
+    }
+  }, [user]);
+
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         // Obter dados da coleção "categorias" no Firestore

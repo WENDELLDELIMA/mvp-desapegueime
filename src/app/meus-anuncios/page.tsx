@@ -207,9 +207,11 @@ export default function meusAnuncios() {
                     </div>
                   )}
                 </div>
-                <button className="bg-white rounded-md w-[150px] shadow-md flex justify-center items-center p-[0.2rem] select-none">
-                  Anunciar
-                </button>
+                <Link href={"anunciar"}>
+                  <button className="bg-white rounded-md w-[150px] shadow-md flex justify-center items-center p-[0.2rem] select-none">
+                    Anunciar
+                  </button>
+                </Link>
               </div>
               <div>
                 <button className="bg-white sm:hidden rounded-md p-2 shadow-md flex justify-center items-center">
@@ -303,9 +305,11 @@ export default function meusAnuncios() {
             ) : produtos.length === 0 ? (
               <div className="px-2 py-4 flex flex-row content-center items-center gap-2 ">
                 <p>Nenhum anúncio encontrado :(</p>
-                <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 text-nowrap">
-                  Anuncie um produto
-                </button>
+                <Link href={"anunciar"} className="contents">
+                  <button className="bg-violet-500 text-white px-6 py-2 rounded-md hover:bg-violet-700 text-nowrap">
+                    Anuncie um produto
+                  </button>
+                </Link>
               </div>
             ) : (
               <>

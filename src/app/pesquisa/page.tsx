@@ -135,7 +135,7 @@ export default function Home() {
               <div className="flex-shrink-0 hidden sm:flex">
                 <Link href={"/"}>
                   <Image
-                    src={"./logo-full.svg"}
+                    src={"./../logo-full.svg"}
                     width={200}
                     height={10}
                     alt="eu"
@@ -143,7 +143,7 @@ export default function Home() {
                 </Link>
               </div>
               <div className="flex-shrink-0 sm:hidden flex">
-                <Image src={"./logo.svg"} width={45} height={45} alt="eu" />
+                <Image src={"./../logo.svg"} width={45} height={45} alt="eu" />
               </div>
 
               {/* Input */}
@@ -162,7 +162,7 @@ export default function Home() {
                   {!user ? (
                     // Botão de Login
                     <Link href={"login"} className="contents">
-                      <button className="bg-white rounded-md p-2 w-[150px] shadow-md flex justify-center items-center">
+                      <button className="bg-white rounded-md w-[150px] shadow-md flex justify-center items-center p-[0.2rem]">
                         Entrar
                       </button>
                     </Link>
@@ -316,7 +316,7 @@ export default function Home() {
                   {getProdutosPorCategoria("").map((produto: any) => (
                     <div
                       key={produto.id}
-                      className="flex flex-row items-center  rounded-lg shadow-md w-full gap-8 mt-2"
+                      className="flex flex-row   rounded-lg shadow-md w-full  mt-2 max-h-[14rem]"
                     >
                       <div className="relative  size-[14rem]">
                         {/* Imagem */}
@@ -327,8 +327,8 @@ export default function Home() {
                           fill
                         />
                       </div>
-                      <div className=" flex flex-grow  flex-col items-start gap-4 p-4">
-                        <h2 className="font-semibold text-lg text-black   ">
+                      <div className=" flex flex-grow h-full border  flex-col justify-between gap-4 p-4">
+                        <h2 className="font-semibold text-2xl lowercase text-black  mt-4 ">
                           {produto.name}
                         </h2>
                         <div className="flex w-full items-center gap-4">

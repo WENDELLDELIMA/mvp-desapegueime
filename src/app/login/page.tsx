@@ -30,27 +30,6 @@ export default function Home() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // Obter dados da coleção "categorias" no Firestore
-
-        const querySnapshot = await getDocs(collection(db, "categorias"));
-
-        // Transformar os documentos em um array de objetos
-        const categoriesWithImages = querySnapshot.docs.map((doc) => ({
-          id: doc.id, // Adicionar ID do documento
-          ...(doc.data() as { category: string }), // Pega os campos do documento
-        }));
-        //@ts-expect-error
-        setCategorias(categoriesWithImages);
-      } catch (error) {
-        console.error("Erro ao buscar categorias no Firebase:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   // const [produtos, setProdutos] = useState([]);
   const [produtosCompras, setProdutosCompras] = useState<any[]>([]);
@@ -65,50 +44,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Buscar categorias
-
-        const categoriasSnapshot = await getDocs(collection(db, "categorias"));
-        const categoriasData = categoriasSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        // @ts-expect-error
-        setCategorias(categoriasData);
-
-        // Buscar produtos
-        const q = query(collection(db, "produtos"), where("type", "==", ""));
-
-        const produtosSnapshot = await getDocs(q);
-        const produtosData = produtosSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        // @ts-expect-error
-        setProdutos(produtosData);
-
-        const qc = query(
-          collection(db, "produtos"),
-          where("type", "==", "Compra")
-        );
-
-        const produtosSnapshotc = await getDocs(qc);
-        const produtosDatac = produtosSnapshotc.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setProdutosCompras(produtosDatac);
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-      }
-      setTimeout(() => {
-        setLoading(false);
-      }, 2700);
-    };
-
-    fetchData();
+    setTimeout(() => {
+      setLoading(false);
+    }, 2700);
   }, []);
 
   return (
@@ -199,8 +137,9 @@ export default function Home() {
 
                 {/* Other categories */}
                 <div
-                  className={`${menuOpen ? "flex" : "hidden"
-                    } flex-col md:flex md:flex-row w-full md:w-auto`}
+                  className={`${
+                    menuOpen ? "flex" : "hidden"
+                  } flex-col md:flex md:flex-row w-full md:w-auto`}
                 >
                   {menu.map((menu) => (
                     <li
