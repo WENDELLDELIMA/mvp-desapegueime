@@ -50,8 +50,8 @@ export default function meusAnuncios() {
   console.log("🚀 ~ meusAnuncios ~ setProdutosCompras:", setProdutosCompras);
   console.log("🚀 ~ meusAnuncios ~ produtosCompras:", produtosCompras);
 
-  const { product } = useProduct();
-  console.log("🚀 ~ meusAnuncios ~ product:", product);
+  //   const { product } = useProduct();
+
   const [produtos, setProdutos] = useState<any[]>([]);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function meusAnuncios() {
         const produtosRef = collection(db, "products");
         const produtosQuery = query(
           produtosRef,
-          where("user", "==", user.username.toUpperCase())
+          where("user", "==", user.username.toLocaleLowerCase())
         );
         const querySnapshot = await getDocs(produtosQuery);
 
