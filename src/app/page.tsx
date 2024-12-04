@@ -70,8 +70,6 @@ export default function Home() {
     fetchFavorites();
   }, [user]);
 
-
-  // TODO: função para alternar os favoritos do usuário
   const toggleFavorite = async (productId: string) => {
     if (!user?.username) {
       console.warn("Usuário não autenticado.");
@@ -79,7 +77,6 @@ export default function Home() {
     }
   
     try {
-      // Verificar se o produto pertence ao usuário
       const productRef = doc(db, "products", productId);
       const productSnapshot = await getDoc(productRef);
   
