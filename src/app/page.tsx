@@ -3,7 +3,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { addDoc, collection, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
@@ -77,29 +77,47 @@ export default function Home() {
       console.warn("Usuário não autenticado.");
       return;
     }
-
+  
     try {
+      // Verificar se o produto pertence ao usuário
+      const productRef = doc(db, "products", productId);
+      const productSnapshot = await getDoc(productRef);
+  
+      if (productSnapshot.exists()) {
+        const productData = productSnapshot.data();
+  
+        if (productData.user === user.username) {
+          alert("Você não pode adicionar seus próprios itens aos favoritos.");
+          return;
+        }
+      } else {
+        console.warn("Produto não encontrado:", productId);
+        return;
+      }
+  
       if (favorites.includes(productId)) {
+        // Remover dos favoritos
         const favoritesQuery = query(
           collection(db, "favorites"),
           where("userId", "==", user.username),
           where("productId", "==", productId)
         );
         const snapshot = await getDocs(favoritesQuery);
-
+  
         snapshot.forEach(async (doc) => {
           await deleteDoc(doc.ref);
         });
-
+  
         setFavorites((prev) => prev.filter((id) => id !== productId));
         console.log("Produto removido dos favoritos:", productId);
       } else {
+        // Adicionar aos favoritos
         await addDoc(collection(db, "favorites"), {
           userId: user.username,
           productId: productId,
           timestamp: new Date(),
         });
-
+  
         setFavorites((prev) => [...prev, productId]);
         console.log("Produto adicionado aos favoritos:", productId);
       }
@@ -107,6 +125,7 @@ export default function Home() {
       console.error("Erro ao alternar favorito:", error);
     }
   };
+  
 
   useEffect(() => {
     const fetchCategories = async () => {
